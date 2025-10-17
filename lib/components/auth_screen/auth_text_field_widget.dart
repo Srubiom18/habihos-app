@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/ui_constants.dart';
-import 'auth_type_selector_widget.dart';
+import 'auth_types.dart';
 
 /// Widget personalizado para campos de texto en autenticación
 class AuthTextFieldWidget extends StatelessWidget {
