@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'product_detail_screen.dart';
+import 'shopping_history_screen.dart';
 import '../models/shopping_list_response.dart';
 import '../models/shopping_item.dart';
+import '../models/shopping_distribution.dart';
 import '../services/shopping_list_service.dart';
 
 class ShoppingListScreen extends StatefulWidget {
@@ -17,11 +19,19 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   ShoppingListResponse? _data;
   bool _isLoading = true;
   String? _error;
+  
+  // Estados para la repartición de gastos
+  bool _isCalculatingDistribution = false;
+  bool _isConfirmingPayment = false;
+  
+  // Estado para verificar si hay historial disponible
+  bool _hasHistory = false;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _checkHistoryExists();
   }
 
   Future<void> _loadData() async {
@@ -32,6 +42,18 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
     try {
       final data = await ShoppingListService.getShoppingList();
+      
+      // Debug: Imprimir datos recibidos
+      print('=== DATOS RECIBIDOS ===');
+      print('Total Expenses: ${data.totalExpenses}');
+      print('Active Distribution: ${data.activeDistribution != null ? "SÍ" : "NO"}');
+      if (data.activeDistribution != null) {
+        print('Distribution ID: ${data.activeDistribution!.distributionId}');
+        print('Included Items: ${data.activeDistribution!.includedItems.length}');
+        print('Total Expenses Distribution: ${data.activeDistribution!.totalExpenses}');
+      }
+      print('======================');
+      
       setState(() {
         _data = data;
         _isLoading = false;
@@ -40,6 +62,20 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       setState(() {
         _error = e.toString();
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _checkHistoryExists() async {
+    try {
+      final history = await ShoppingListService.getShoppingHistory();
+      setState(() {
+        _hasHistory = history.isNotEmpty;
+      });
+    } catch (e) {
+      // Si hay error al obtener historial, asumimos que no hay historial
+      setState(() {
+        _hasHistory = false;
       });
     }
   }
@@ -75,6 +111,78 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     );
   }
 
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  /// Calcula la repartición de gastos llamando a la API
+  Future<void> _calculateExpenseDistribution() async {
+    if (_data == null) return;
+    
+    setState(() {
+      _isCalculatingDistribution = true;
+    });
+
+    try {
+      final distributionData = await ShoppingListService.calculateDistribution();
+      
+      // Debug: Imprimir respuesta del backend
+      print('=== RESPUESTA BACKEND ===');
+      print('Distribution ID: ${distributionData.distributionId}');
+      print('Included Items: ${distributionData.includedItems.length}');
+      print('Total Expenses: ${distributionData.totalExpenses}');
+      print('Expenses Summary: ${distributionData.expensesSummary.length}');
+      print('========================');
+      
+      setState(() {
+        _isCalculatingDistribution = false;
+      });
+      
+      // Recargar datos para obtener la distribución activa
+      await _loadData();
+      
+      _showSuccessSnackBar('Repartición de gastos calculada');
+    } catch (e) {
+      setState(() {
+        _isCalculatingDistribution = false;
+      });
+      _showErrorSnackBar('Error al calcular repartición: $e');
+    }
+  }
+
+  /// Confirma que el usuario actual ha realizado su transferencia
+  Future<void> _confirmPayment() async {
+    if (_data == null) return;
+    
+    setState(() {
+      _isConfirmingPayment = true;
+    });
+
+    try {
+      await ShoppingListService.confirmPayment();
+      
+      setState(() {
+        _isConfirmingPayment = false;
+      });
+      
+      // Recargar datos para obtener el estado actualizado
+      await _loadData();
+      
+      _showSuccessSnackBar('Pago confirmado correctamente');
+    } catch (e) {
+      setState(() {
+        _isConfirmingPayment = false;
+      });
+      _showErrorSnackBar('Error al confirmar pago: $e');
+    }
+  }
+
+
   void _navigateToProductDetail(item) {
     if (item.isPurchased) {
       Navigator.push(
@@ -86,6 +194,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         ),
       );
     } else {
+      // Verificar si hay distribución activa
+      if (_data?.activeDistribution != null) {
+        _showErrorSnackBar('No se pueden comprar productos mientras hay una distribución activa. Complete la distribución actual antes de comprar nuevos productos.');
+        return;
+      }
+      
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -128,14 +242,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     ? _buildEmptyView()
                     : _buildContent(),
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 25),
-        child: FloatingActionButton(
-          onPressed: _navigateToAddProduct,
-          backgroundColor: Colors.orange[600],
-          child: const Icon(Icons.add, color: Colors.white),
-        ),
-      ),
+      floatingActionButton: _buildFloatingActionButtons(),
     );
   }
 
@@ -206,6 +313,52 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     );
   }
 
+  Widget _buildFloatingActionButtons() {
+    // Si no hay productos pero sí hay historial, mostrar múltiples botones
+    if ((_data == null || _data!.items.isEmpty) && _hasHistory) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 25),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            // Botón de historial
+            FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ShoppingHistoryScreen(),
+                  ),
+                );
+              },
+              backgroundColor: Colors.blue[600],
+              heroTag: "history_button",
+              child: const Icon(Icons.history, color: Colors.white),
+            ),
+            const SizedBox(width: 16),
+            // Botón de agregar producto
+            FloatingActionButton(
+              onPressed: _navigateToAddProduct,
+              backgroundColor: Colors.orange[600],
+              heroTag: "add_button",
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // Botón normal cuando hay productos o no hay historial
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 25),
+      child: FloatingActionButton(
+        onPressed: _navigateToAddProduct,
+        backgroundColor: Colors.orange[600],
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
   Widget _buildContent() {
     final data = _data!;
     
@@ -222,22 +375,63 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             // 1. Card con gasto total
             _buildTotalExpenseCard(data.totalExpenses),
             
+            const SizedBox(height: 16),
+            
+            // Botón para ver historial de compras
+            _buildHistoryButton(),
+            
             const SizedBox(height: 20),
             
             // 2. Lista de productos (pendientes y comprados)
             _buildProductsList(data.items),
             
-            // Solo mostrar gráfica y repartición si hay productos comprados
+            // Mostrar mensaje si hay productos comprados pero no hay gastos nuevos para distribuir
+            if (data.purchasedItems.isNotEmpty && data.activeDistribution == null && data.totalExpenses == 0) ...[
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue[600], size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Todos los productos comprados han sido saldados. Agrega nuevos productos para crear una nueva distribución.',
+                        style: TextStyle(
+                          color: Colors.blue[700],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            
+            // Mostrar sección de gastos si hay productos comprados
             if (data.purchasedItems.isNotEmpty) ...[
               const SizedBox(height: 20),
               
-              // 3. Gráfica circular de gastos por persona
-              _buildExpensesPieChart(data),
+              // 3. Gráfica circular de gastos por persona (siempre que haya productos comprados)
+              _buildExpensesPieChart(data, data.activeDistribution),
               
               const SizedBox(height: 20),
               
-              // 4. Tabla de repartición de gastos
-              _buildExpenseDistributionTable(data),
+              // 4. Botón para calcular repartición de gastos (solo si no hay distribución activa Y hay gastos nuevos)
+              if (data.activeDistribution == null && data.totalExpenses > 0) ...[
+                _buildExpenseDistributionButton(data),
+              ],
+              
+              // 5. Mostrar repartición de gastos si hay distribución activa
+              if (data.activeDistribution != null) ...[
+                const SizedBox(height: 20),
+                _buildExpenseDistributionTable(data.activeDistribution!),
+              ],
             ],
             
             const SizedBox(height: 80), // Espacio para el botón flotante
@@ -248,41 +442,210 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   }
 
   // 1. Card con gasto total
+  // Botón para ver historial de compras
+  Widget _buildHistoryButton() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ShoppingHistoryScreen(),
+            ),
+          );
+        },
+        icon: const Icon(Icons.history, size: 20),
+        label: const Text('Ver Historial de Compras'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey[100],
+          foregroundColor: Colors.grey[700],
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(color: Colors.grey[300]!),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildTotalExpenseCard(double totalExpenses) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      height: 200,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.orange[400]!, Colors.deepOrange[600]!],
+          colors: [
+            Colors.indigo[800]!,
+            Colors.indigo[600]!,
+            Colors.purple[700]!,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.3),
-            blurRadius: 12,
+            color: Colors.indigo.withOpacity(0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
+      child: Stack(
         children: [
-          const Text(
-            'Gasto Total',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.white70,
-              fontWeight: FontWeight.w500,
+          // Patrón de fondo decorativo
+          Positioned(
+            top: -20,
+            right: -20,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            '€${totalExpenses.toStringAsFixed(2)}',
-            style: const TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          Positioned(
+            bottom: -30,
+            left: -30,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.05),
+              ),
+            ),
+          ),
+          
+          // Contenido principal
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header con chip y logo
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Chip simulado
+                    Container(
+                      width: 40,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: Colors.amber[300],
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.amber[100]!, width: 1),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 20,
+                          height: 15,
+                          decoration: BoxDecoration(
+                            color: Colors.amber[100],
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Logo simulado
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'HABIHOS',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Número de tarjeta simulado
+                const Text(
+                  '••••  ••••  ••••  1234',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 2,
+                  ),
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Información del titular y gasto
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'GASTO TOTAL',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '€${totalExpenses.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          'VÁLIDA HASTA',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          '∞',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
@@ -474,6 +837,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       );
     } else {
       // Producto pendiente
+      final isDistributionActive = _data?.activeDistribution != null;
+      
       return InkWell(
         onTap: () => _navigateToProductDetail(item),
         child: Container(
@@ -481,34 +846,55 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           decoration: BoxDecoration(
             border: Border(
               top: BorderSide(color: Colors.grey[200]!, width: 1),
-          ),
+            ),
+            color: isDistributionActive ? Colors.grey[50] : null,
           ),
           child: Row(
             children: [
               Icon(
                 Icons.radio_button_unchecked,
-                color: Colors.grey[400],
+                color: isDistributionActive ? Colors.grey[300] : Colors.grey[400],
                 size: 24,
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  item.name,
-                style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                    color: Colors.grey[700],
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        color: isDistributionActive ? Colors.grey[500] : Colors.grey[700],
+                      ),
+                    ),
+                    if (isDistributionActive) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'Compras deshabilitadas durante distribución',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.orange[600],
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               Chip(
-                label: const Text(
-                  'Pendiente',
-                  style: TextStyle(fontSize: 12),
+                label: Text(
+                  isDistributionActive ? 'Bloqueado' : 'Pendiente',
+                  style: const TextStyle(fontSize: 12),
                 ),
-                backgroundColor: Colors.orange[50],
-                labelStyle: TextStyle(color: Colors.orange[700]),
-                side: BorderSide(color: Colors.orange[200]!),
+                backgroundColor: isDistributionActive ? Colors.red[50] : Colors.orange[50],
+                labelStyle: TextStyle(
+                  color: isDistributionActive ? Colors.red[700] : Colors.orange[700],
+                ),
+                side: BorderSide(
+                  color: isDistributionActive ? Colors.red[200]! : Colors.orange[200]!,
+                ),
               ),
             ],
           ),
@@ -517,8 +903,51 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     }
   }
 
+  // Método auxiliar para construir los datos de la gráfica
+  List<PieChartData> _buildPieChartData(ShoppingListResponse data, ShoppingDistribution? distribution) {
+    // Si hay distribución activa, usar los datos de la distribución
+    if (distribution != null && distribution.expensesSummary.isNotEmpty) {
+      return distribution.expensesSummary.map((summary) {
+        return PieChartData(
+          value: summary.totalSpent,
+          color: _getColorForMember(summary.memberId),
+          label: summary.memberName,
+        );
+      }).toList();
+    }
+    
+    // Si no hay distribución activa, calcular los gastos de todos los productos comprados
+    Map<String, double> expensesByMember = {};
+    Map<String, String> memberNames = {};
+    
+    // Inicializar todos los miembros con 0
+    for (var member in data.members) {
+      expensesByMember[member.id] = 0.0;
+      memberNames[member.id] = member.name;
+    }
+    
+    // Sumar gastos de cada miembro
+    for (var item in data.purchasedItems) {
+      if (item.purchasedBy != null && item.price != null) {
+        String memberId = item.purchasedBy!.id;
+        expensesByMember[memberId] = (expensesByMember[memberId] ?? 0.0) + item.price!;
+      }
+    }
+    
+    // Convertir a PieChartData
+    return expensesByMember.entries
+        .where((entry) => entry.value > 0)
+        .map((entry) {
+          return PieChartData(
+            value: entry.value,
+            color: _getColorForMember(entry.key),
+            label: memberNames[entry.key] ?? 'Desconocido',
+          );
+        }).toList();
+  }
+
   // 3. Gráfica circular de gastos por persona
-  Widget _buildExpensesPieChart(ShoppingListResponse data) {
+  Widget _buildExpensesPieChart(ShoppingListResponse data, ShoppingDistribution? distribution) {
     return Container(
       padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -550,13 +979,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
               width: 200,
               child: CustomPaint(
                 painter: PieChartPainter(
-                  data: data.expensesSummary.map((summary) {
-                    return PieChartData(
-                      value: summary.totalSpent,
-                      color: _getColorForMember(summary.memberId),
-                      label: summary.memberName,
-                    );
-                  }).toList(),
+                  data: _buildPieChartData(data, distribution),
                   total: data.totalExpenses,
                 ),
               ),
@@ -564,8 +987,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           ),
           const SizedBox(height: 24),
           // Leyenda
-          ...data.expensesSummary.map((summary) {
-            final percentage = summary.percentageOfTotal(data.totalExpenses);
+          ..._buildPieChartData(data, distribution).map((pieData) {
+            final percentage = (pieData.value / data.totalExpenses * 100);
             
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
@@ -575,14 +998,14 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     width: 16,
                     height: 16,
                     decoration: BoxDecoration(
-                      color: _getColorForMember(summary.memberId),
+                      color: pieData.color,
                       shape: BoxShape.circle,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
                     child: Text(
-                      summary.memberName,
+                      pieData.label,
                   style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
@@ -590,7 +1013,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 ),
                   ),
                   Text(
-                    '€${summary.totalSpent.toStringAsFixed(2)} (${percentage.toStringAsFixed(1)}%)',
+                    '€${pieData.value.toStringAsFixed(2)} (${percentage.toStringAsFixed(1)}%)',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -624,8 +1047,94 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     return colors[hash % colors.length];
   }
 
-  // 4. Tabla de repartición de gastos
-  Widget _buildExpenseDistributionTable(ShoppingListResponse data) {
+  // 4. Botón para calcular repartición de gastos
+  Widget _buildExpenseDistributionButton(ShoppingListResponse data) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Repartición de Gastos',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Calcula cómo se deben repartir los gastos entre todos los miembros de la casa.',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _isCalculatingDistribution ? null : _calculateExpenseDistribution,
+              icon: _isCalculatingDistribution 
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Icon(Icons.calculate),
+              label: Text(
+                _isCalculatingDistribution 
+                    ? 'Calculando...' 
+                    : 'Calcular Repartición',
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[600],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 5. Tabla de repartición de gastos
+  Widget _buildExpenseDistributionTable(ShoppingDistribution distribution) {
+    // Debug: Imprimir información de la distribución
+    print('=== DISTRIBUCIÓN DEBUG ===');
+    print('Distribution ID: ${distribution.distributionId}');
+    print('Included Items: ${distribution.includedItems.length}');
+    print('Total Expenses: ${distribution.totalExpenses}');
+    print('Expenses Summary: ${distribution.expensesSummary.length}');
+    print('Suggested Transfers: ${distribution.suggestedTransfers.length}');
+    print('All Confirmed: ${distribution.allConfirmed}');
+    
+    for (var item in distribution.includedItems) {
+      print('Item: ${item.name} - Price: ${item.price} - Purchased: ${item.isPurchased}');
+    }
+    
+    for (var summary in distribution.expensesSummary) {
+      print('Summary: ${summary.memberName} - Total: ${summary.totalSpent}');
+    }
+    print('========================');
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -675,7 +1184,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '€${data.totalExpenses.toStringAsFixed(2)}',
+                      '€${distribution.totalExpenses.toStringAsFixed(2)}',
                       style: TextStyle(
                         fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -700,7 +1209,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '€${data.averageExpensePerMember.toStringAsFixed(2)}',
+                      '€${distribution.averageExpensePerMember.toStringAsFixed(2)}',
                       style: TextStyle(
                         fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -727,8 +1236,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           const SizedBox(height: 12),
           
           // Lista de todos los miembros con sus balances
-          ...data.expensesSummary.map((summary) {
-            final isCurrentUser = summary.memberId == data.currentUserId;
+          ...distribution.expensesSummary.map((summary) {
+            final isCurrentUser = summary.memberId == _data!.currentUserId;
               
               return Container(
               padding: const EdgeInsets.all(14),
@@ -842,8 +1351,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           ),
           const SizedBox(height: 12),
           
-          // Mostrar transferencias que vienen del backend (solo las que involucran al usuario actual)
-          ...data.suggestedTransfers.isEmpty
+          // Mostrar transferencias que vienen del backend
+          ...distribution.suggestedTransfers.isEmpty
               ? [
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -869,7 +1378,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       ),
                   ),
                 ]
-              : data.suggestedTransfers.map((transfer) {
+              : distribution.suggestedTransfers.map((transfer) {
                   return Container(
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.only(bottom: 8),
@@ -951,6 +1460,103 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 ),
               );
             }).toList(),
+          
+          const SizedBox(height: 24),
+          
+          // Sección de confirmación de pagos
+          _buildPaymentConfirmationSection(distribution),
+        ],
+      ),
+    );
+  }
+
+  /// Construye la sección de confirmación de pagos
+  Widget _buildPaymentConfirmationSection(ShoppingDistribution distribution) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.orange[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.payment, color: Colors.orange[700], size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Confirmación de Pagos',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange[700],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Confirma que ya has realizado los pagos correspondientes. Cuando todos los participantes hayan confirmado sus pagos, la lista de compras se reiniciará automáticamente.',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: _data?.userHasConfirmedPayment ?? false
+                ? Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.green[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green[300]!, width: 2),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green[700], size: 24),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Pago Confirmado',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ElevatedButton.icon(
+                    onPressed: _isConfirmingPayment ? null : _confirmPayment,
+                    icon: _isConfirmingPayment 
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(Icons.check_circle, size: 20),
+                    label: Text(
+                      _isConfirmingPayment ? 'Confirmando...' : 'Confirmar Pago',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[600],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+          ),
         ],
       ),
     );

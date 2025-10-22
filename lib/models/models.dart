@@ -12,4 +12,6 @@ export 'mark_purchased_request.dart';
 
 // Responses
 export 'shopping_list_response.dart';
+export 'shopping_distribution.dart';
+export 'payment_confirmation.dart';
 

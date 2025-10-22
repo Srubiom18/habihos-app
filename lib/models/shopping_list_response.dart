@@ -2,20 +2,21 @@ import 'shopping_item.dart';
 import 'house_member.dart';
 import 'expense_summary.dart';
 import 'transfer.dart';
+import 'shopping_distribution.dart';
 
 /// Respuesta completa del backend para la pantalla de lista de compras
 /// Contiene toda la información necesaria para mostrar:
-/// - Lista de productos
+/// - Lista de productos (solo NO saldados)
 /// - Miembros de la casa
-/// - Resumen de gastos
-/// - Transferencias sugeridas
+/// - Distribución activa (si existe)
+/// - Estado de confirmación del usuario
 class ShoppingListResponse {
   final List<ShoppingItem> items;
   final List<HouseMember> members;
   final double totalExpenses;
   final double averageExpensePerMember;
-  final List<ExpenseSummary> expensesSummary;
-  final List<Transfer> suggestedTransfers;
+  final ShoppingDistribution? activeDistribution;
+  final bool userHasConfirmedPayment;
   final String currentUserId; // ID del usuario que está viendo la pantalla
 
   ShoppingListResponse({
@@ -23,8 +24,8 @@ class ShoppingListResponse {
     required this.members,
     required this.totalExpenses,
     required this.averageExpensePerMember,
-    required this.expensesSummary,
-    required this.suggestedTransfers,
+    required this.activeDistribution,
+    required this.userHasConfirmedPayment,
     required this.currentUserId,
   });
 
@@ -39,12 +40,10 @@ class ShoppingListResponse {
           .toList(),
       totalExpenses: (json['totalExpenses'] as num).toDouble(),
       averageExpensePerMember: (json['averageExpensePerMember'] as num).toDouble(),
-      expensesSummary: (json['expensesSummary'] as List<dynamic>)
-          .map((summary) => ExpenseSummary.fromJson(summary as Map<String, dynamic>))
-          .toList(),
-      suggestedTransfers: (json['suggestedTransfers'] as List<dynamic>)
-          .map((transfer) => Transfer.fromJson(transfer as Map<String, dynamic>))
-          .toList(),
+      activeDistribution: json['activeDistribution'] != null 
+          ? ShoppingDistribution.fromJson(json['activeDistribution'] as Map<String, dynamic>)
+          : null,
+      userHasConfirmedPayment: json['userHasConfirmedPayment'] as bool,
       currentUserId: json['currentUserId'] as String,
     );
   }
@@ -56,8 +55,8 @@ class ShoppingListResponse {
       'members': members.map((member) => member.toJson()).toList(),
       'totalExpenses': totalExpenses,
       'averageExpensePerMember': averageExpensePerMember,
-      'expensesSummary': expensesSummary.map((summary) => summary.toJson()).toList(),
-      'suggestedTransfers': suggestedTransfers.map((transfer) => transfer.toJson()).toList(),
+      'activeDistribution': activeDistribution?.toJson(),
+      'userHasConfirmedPayment': userHasConfirmedPayment,
       'currentUserId': currentUserId,
     };
   }
@@ -78,8 +77,9 @@ class ShoppingListResponse {
   }
 
   ExpenseSummary? getExpenseSummaryForMember(String memberId) {
+    if (activeDistribution == null) return null;
     try {
-      return expensesSummary.firstWhere((summary) => summary.memberId == memberId);
+      return activeDistribution!.expensesSummary.firstWhere((summary) => summary.memberId == memberId);
     } catch (e) {
       return null;
     }

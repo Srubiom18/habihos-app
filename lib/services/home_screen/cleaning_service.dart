@@ -2,6 +2,7 @@ import '../../interfaces/home_screen/cleaning_area.dart';
 import '../../models/api_models.dart';
 import 'cleaning_calendar_service.dart';
 import '../common/cleaning_zones_state_service.dart';
+import '../house/house_member_service.dart';
 
 /// Servicio que maneja la lógica de negocio relacionada con las áreas de limpieza
 /// 
@@ -29,6 +30,11 @@ class CleaningService {
 
   /// Estado del calendario de la API
   CleaningCalendarResponse? _calendarResponse;
+
+  /// Cache para el memberId del usuario actual
+  String? _cachedMemberId;
+  DateTime? _memberIdCacheTime;
+  static const int memberIdCacheMinutes = 30;
 
   /// Indica si hay zonas configuradas según la API
   bool get hasConfiguredZones => _calendarResponse?.hasConfiguredZones ?? false;
@@ -245,6 +251,8 @@ class CleaningService {
   /// Este método debe llamarse al inicializar la aplicación
   /// para cargar el calendario de limpieza actual.
   Future<void> initializeFromAPI() async {
+    // Limpiar cache del memberId al inicializar
+    clearMemberIdCache();
     // Inicializar el servicio de estado de zonas
     await _zonesStateService.initialize();
     await loadCleaningAreasFromAPI();
@@ -279,8 +287,18 @@ class CleaningService {
   /// 
   /// Útil para casos donde se quiere forzar una actualización completa
   Future<void> forceUpdate() async {
+    // Limpiar cache del memberId para forzar nueva consulta
+    clearMemberIdCache();
     await loadCleaningAreasFromAPI();
     await _zonesStateService.markZonesAsUpdated();
+  }
+
+  /// Limpia el cache del memberId del usuario actual
+  /// 
+  /// Útil cuando cambia el usuario o se necesita forzar una nueva consulta
+  void clearMemberIdCache() {
+    _cachedMemberId = null;
+    _memberIdCacheTime = null;
   }
 
   /// Obtiene la respuesta completa del calendario
@@ -295,5 +313,163 @@ class CleaningService {
   /// Retorna true si los datos vienen de la API, false si son de ejemplo
   bool get isUsingAPIData {
     return _calendarResponse != null && _calendarResponse!.hasConfiguredZones;
+  }
+
+  /// Obtiene el memberId del usuario actual desde la API de miembros
+  /// 
+  /// Retorna el memberId del usuario actual o null si no se encuentra
+  /// Usa cache para evitar llamadas repetidas a la API
+  Future<String?> getCurrentMemberId() async {
+    // Verificar cache
+    if (_cachedMemberId != null && 
+        _memberIdCacheTime != null &&
+        DateTime.now().difference(_memberIdCacheTime!).inMinutes < memberIdCacheMinutes) {
+      return _cachedMemberId;
+    }
+
+    try {
+      // Usar el mismo servicio que ya funciona para asignaciones
+      final members = await HouseMemberService.getHouseMembers();
+      
+      // Buscar el miembro que es el usuario actual
+      final currentMember = members.firstWhere(
+        (member) => member.isCurrentUser,
+        orElse: () => throw StateError('Usuario actual no encontrado'),
+      );
+      
+      // Cachear el resultado
+      _cachedMemberId = currentMember.id;
+      _memberIdCacheTime = DateTime.now();
+      
+      return _cachedMemberId;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Filtra las zonas según las asignaciones y exclusiones del usuario actual
+  /// 
+  /// Retorna una lista de zonas que el usuario puede ver (no está excluido)
+  /// y que están ordenadas según su asignación
+  Future<List<CleaningArea>> getFilteredAndOrderedAreas() async {
+    if (!isUsingAPIData || _calendarResponse == null) {
+      // Si no hay datos de API, retornar todas las áreas sin filtro
+      return _cleaningAreas;
+    }
+
+    final currentMemberId = await getCurrentMemberId();
+    if (currentMemberId == null) {
+      // Si no hay usuario autenticado, retornar todas las áreas
+      return _cleaningAreas;
+    }
+
+    // Filtrar zonas donde el usuario NO está excluido
+    final filteredZones = _calendarResponse!.zoneRotation.where((zone) {
+      return !zone.excludeUsers.any((user) => user.memberId == currentMemberId);
+    }).toList();
+
+    // Ordenar por posición en la rotación
+    filteredZones.sort((a, b) => a.positionInRotation.compareTo(b.positionInRotation));
+
+    // Convertir a CleaningArea
+    final apiAreas = _calendarService.convertZonesToCleaningAreas(filteredZones);
+    return apiAreas.map((area) => area.toCleaningAreaImpl()).toList();
+  }
+
+  /// Obtiene el área actual asignada al usuario (si está asignado a alguna)
+  /// 
+  /// Retorna el área asignada al usuario o null si no está asignado a ninguna
+  Future<CleaningArea?> getCurrentUserAssignedArea() async {
+    if (!isUsingAPIData || _calendarResponse == null) {
+      return null;
+    }
+
+    final currentMemberId = await getCurrentMemberId();
+    if (currentMemberId == null) {
+      return null;
+    }
+
+    // Buscar la zona donde el usuario está asignado
+    final assignedZone = _calendarResponse!.zoneRotation.firstWhere(
+      (zone) => zone.assignedUsers.any((user) => user.memberId == currentMemberId),
+      orElse: () => throw StateError('No assigned zone found'),
+    );
+
+    // Convertir a CleaningArea
+    final apiArea = _calendarService.convertZonesToCleaningAreas([assignedZone]).first;
+    return apiArea.toCleaningAreaImpl();
+  }
+
+  /// Obtiene las áreas que NO están asignadas al usuario actual, ordenadas por prioridad
+  /// 
+  /// Retorna lista de áreas ordenadas según la secuencia de rotación desde la zona asignada
+  Future<List<CleaningArea>> getOtherAreasForUser() async {
+    if (!isUsingAPIData || _calendarResponse == null) {
+      // Si no hay datos de API, usar la lógica original
+      return _cleaningAreas.skip(1).toList();
+    }
+
+    final currentMemberId = await getCurrentMemberId();
+    if (currentMemberId == null) {
+      return _cleaningAreas.skip(1).toList();
+    }
+
+    // Obtener todas las zonas filtradas (sin exclusiones)
+    final filteredZones = _calendarResponse!.zoneRotation.where((zone) {
+      return !zone.excludeUsers.any((user) => user.memberId == currentMemberId);
+    }).toList();
+
+    // Ordenar todas las zonas por posición en la rotación
+    filteredZones.sort((a, b) => a.positionInRotation.compareTo(b.positionInRotation));
+
+    // Buscar la zona asignada al usuario
+    final assignedZone = filteredZones.firstWhere(
+      (zone) => zone.assignedUsers.any((user) => user.memberId == currentMemberId),
+      orElse: () => throw StateError('No assigned zone found'),
+    );
+
+    // Crear la secuencia de rotación desde la zona asignada
+    final otherZones = <CleaningZoneRotationResponse>[];
+    
+    // Encontrar el índice de la zona asignada en la lista ordenada
+    final assignedIndex = filteredZones.indexOf(assignedZone);
+    
+    // Agregar las zonas que vienen después de la asignada
+    for (int i = assignedIndex + 1; i < filteredZones.length; i++) {
+      otherZones.add(filteredZones[i]);
+    }
+    
+    // Agregar las zonas que vienen antes de la asignada (para completar el ciclo)
+    for (int i = 0; i < assignedIndex; i++) {
+      otherZones.add(filteredZones[i]);
+    }
+
+    // Convertir a CleaningArea
+    final apiAreas = _calendarService.convertZonesToCleaningAreas(otherZones);
+    return apiAreas.map((area) => area.toCleaningAreaImpl()).toList();
+  }
+
+  /// Obtiene el índice de la zona asignada al usuario actual
+  /// 
+  /// Retorna el índice de la zona asignada o 0 si no está asignado
+  Future<int> getCurrentUserAssignedAreaIndex() async {
+    if (!isUsingAPIData || _calendarResponse == null) {
+      return 0;
+    }
+
+    final currentMemberId = await getCurrentMemberId();
+    if (currentMemberId == null) {
+      return 0;
+    }
+
+    // Buscar el índice de la zona asignada al usuario
+    for (int i = 0; i < _calendarResponse!.zoneRotation.length; i++) {
+      final zone = _calendarResponse!.zoneRotation[i];
+      if (zone.assignedUsers.any((user) => user.memberId == currentMemberId)) {
+        return i;
+      }
+    }
+
+    return 0; // Fallback si no se encuentra
   }
 }

@@ -380,6 +380,7 @@ class CleaningZoneRotationResponse {
   final bool isOverdue;
   final int positionInRotation;
   final List<AssignedUserInfo> assignedUsers; // Lista de usuarios asignados
+  final List<AssignedUserInfo> excludeUsers; // ✅ NUEVO: Lista de usuarios excluidos
 
   const CleaningZoneRotationResponse({
     this.assignmentId,
@@ -396,6 +397,7 @@ class CleaningZoneRotationResponse {
     required this.isOverdue,
     required this.positionInRotation,
     required this.assignedUsers,
+    this.excludeUsers = const [], // ✅ NUEVO: Lista de usuarios excluidos
   });
 
   factory CleaningZoneRotationResponse.fromMap(Map<String, dynamic> map) {
@@ -424,6 +426,11 @@ class CleaningZoneRotationResponse {
               .map((user) => AssignedUserInfo.fromMap(user as Map<String, dynamic>))
               .toList()
           : [],
+      excludeUsers: map['excludeUsers'] != null 
+          ? (map['excludeUsers'] as List)
+              .map((user) => AssignedUserInfo.fromMap(user as Map<String, dynamic>))
+              .toList()
+          : [], // ✅ NUEVO: Lista de usuarios excluidos
     );
   }
 }
@@ -493,6 +500,7 @@ class AssignedUserInfo {
   final String userInitials;
   final bool hasRegisteredAccount;
   final String? assignmentId; // ID de la asignación para poder desasignar
+  final String? exclusionId; // ID de la exclusión para poder quitar la exclusión
 
   const AssignedUserInfo({
     required this.memberId,
@@ -501,6 +509,7 @@ class AssignedUserInfo {
     required this.userInitials,
     required this.hasRegisteredAccount,
     this.assignmentId,
+    this.exclusionId,
   });
 
   factory AssignedUserInfo.fromMap(Map<String, dynamic> map) {
@@ -511,6 +520,7 @@ class AssignedUserInfo {
       userInitials: map['userInitials'] as String,
       hasRegisteredAccount: map['hasRegisteredAccount'] as bool? ?? false,
       assignmentId: map['assignmentId'] as String?,
+      exclusionId: map['exclusionId'] as String?,
     );
   }
 
@@ -522,6 +532,7 @@ class AssignedUserInfo {
       'userInitials': userInitials,
       'hasRegisteredAccount': hasRegisteredAccount,
       'assignmentId': assignmentId,
+      'exclusionId': exclusionId,
     };
   }
 }
@@ -675,6 +686,81 @@ class HouseMemberInfoResponse {
       'lastActiveAt': lastActiveAt?.toIso8601String(),
       'isActive': isActive,
       'memberType': memberType,
+    };
+  }
+}
+
+/// Respuesta de una exclusión de rotación de limpieza
+class CleaningRotationExclusionResponse {
+  final String id;
+  final String memberId;
+  final String memberName;
+  final String memberEmail;
+  final String cleaningAreaId;
+  final String cleaningAreaName;
+  final String cleaningAreaDescription;
+  final String cleaningAreaColor;
+  final String? reason;
+  final DateTime? expiresAt;
+  final bool isPermanent;
+  final bool isTemporary;
+  final bool isActive;
+  final DateTime createdAt;
+
+  const CleaningRotationExclusionResponse({
+    required this.id,
+    required this.memberId,
+    required this.memberName,
+    required this.memberEmail,
+    required this.cleaningAreaId,
+    required this.cleaningAreaName,
+    required this.cleaningAreaDescription,
+    required this.cleaningAreaColor,
+    this.reason,
+    this.expiresAt,
+    required this.isPermanent,
+    required this.isTemporary,
+    required this.isActive,
+    required this.createdAt,
+  });
+
+  factory CleaningRotationExclusionResponse.fromMap(Map<String, dynamic> map) {
+    return CleaningRotationExclusionResponse(
+      id: map['id'] as String,
+      memberId: map['memberId'] as String,
+      memberName: map['memberName'] as String,
+      memberEmail: map['memberEmail'] as String,
+      cleaningAreaId: map['cleaningAreaId'] as String,
+      cleaningAreaName: map['cleaningAreaName'] as String,
+      cleaningAreaDescription: map['cleaningAreaDescription'] as String,
+      cleaningAreaColor: map['cleaningAreaColor'] as String,
+      reason: map['reason'] as String?,
+      expiresAt: map['expiresAt'] != null 
+          ? DateTime.parse(map['expiresAt'] as String)
+          : null,
+      isPermanent: map['isPermanent'] as bool,
+      isTemporary: map['isTemporary'] as bool,
+      isActive: map['isActive'] as bool,
+      createdAt: DateTime.parse(map['createdAt'] as String),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'memberId': memberId,
+      'memberName': memberName,
+      'memberEmail': memberEmail,
+      'cleaningAreaId': cleaningAreaId,
+      'cleaningAreaName': cleaningAreaName,
+      'cleaningAreaDescription': cleaningAreaDescription,
+      'cleaningAreaColor': cleaningAreaColor,
+      'reason': reason,
+      'expiresAt': expiresAt?.toIso8601String(),
+      'isPermanent': isPermanent,
+      'isTemporary': isTemporary,
+      'isActive': isActive,
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 }
