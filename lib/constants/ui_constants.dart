@@ -23,10 +23,10 @@ class UIConstants {
   static const Color fadeGradientColor = Color(0xFFF5F5F5); // Colors.grey[100]
   
   /// Color de fondo de botón completado
-  static const Color completedButtonBackground = Color(0xFFE8F5E8); // Colors.green[100]
+  static const Color completedButtonBackground = Color(0xFFFFF8E1); // Colors.amber[50]
   
   /// Color de borde de botón completado
-  static const Color completedButtonBorder = Color(0xFF81C784); // Colors.green[300]
+  static const Color completedButtonBorder = Color(0xFFFFC107); // Colors.amber
   
   /// Color primario de la aplicación
   static const Color primaryColor = Color(0xFF2196F3); // Colors.blue[500]

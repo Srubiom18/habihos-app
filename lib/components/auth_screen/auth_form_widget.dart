@@ -53,13 +53,11 @@ class AuthFormWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Form(
       key: formKey,
-      child: Expanded(
-        child: switch (selectedAuthType) {
-          AuthType.login => _buildLoginForm(),
-          AuthType.register => _buildRegisterForm(),
-          AuthType.guest => _buildGuestForm(),
-        },
-      ),
+      child: switch (selectedAuthType) {
+        AuthType.login => _buildLoginForm(),
+        AuthType.register => _buildRegisterForm(),
+        AuthType.guest => _buildGuestForm(),
+      },
     );
   }
 

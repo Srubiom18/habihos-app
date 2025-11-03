@@ -85,4 +85,34 @@ class HouseService {
       }
     }
   }
+
+  // Obtener información básica de la casa
+  static Future<HouseInfoResponse> getHouseInfo() async {
+    try {
+      final response = await HttpInterceptorService.get(
+        '${AppConfig.baseUrl}${AppConfig.apiVersion}/house/info',
+      ).timeout(
+        const Duration(milliseconds: AppConfig.connectionTimeout),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        return HouseInfoResponse.fromMap(data);
+      } else if (response.statusCode == 401) {
+        throw Exception('Token de autenticación inválido');
+      } else if (response.statusCode == 404) {
+        throw Exception('No se encontró una casa activa para el usuario');
+      } else {
+        throw Exception('Error del servidor: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e.toString().contains('TimeoutException')) {
+        throw Exception('Tiempo de espera agotado. Verifica tu conexión.');
+      } else if (e.toString().contains('SocketException')) {
+        throw Exception('No se puede conectar al servidor. Verifica que la API esté ejecutándose.');
+      } else {
+        throw Exception('Error de conexión: ${e.toString()}');
+      }
+    }
+  }
 }

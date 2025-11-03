@@ -314,6 +314,97 @@ class CreateHouseResponse {
   }
 }
 
+/// Modelo de respuesta para información básica de la casa
+class HouseInfoResponse {
+  final String name;
+  final String houseCode;
+
+  const HouseInfoResponse({
+    required this.name,
+    required this.houseCode,
+  });
+
+  factory HouseInfoResponse.fromMap(Map<String, dynamic> map) {
+    return HouseInfoResponse(
+      name: map['name'] as String,
+      houseCode: map['houseCode'] as String,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'houseCode': houseCode,
+    };
+  }
+}
+
+/// Modelo de respuesta para información del perfil de usuario
+class UserProfileResponse {
+  final String id;
+  final String email;
+  final String nickname;
+  final String userType;
+  final bool isVerified;
+  final bool isActive;
+  final DateTime createdAt;
+  final DateTime? lastLogin;
+
+  const UserProfileResponse({
+    required this.id,
+    required this.email,
+    required this.nickname,
+    required this.userType,
+    required this.isVerified,
+    required this.isActive,
+    required this.createdAt,
+    this.lastLogin,
+  });
+
+  factory UserProfileResponse.fromMap(Map<String, dynamic> map) {
+    return UserProfileResponse(
+      id: map['id'] as String,
+      email: map['email'] as String,
+      nickname: map['nickname'] as String,
+      userType: map['userType'] as String,
+      isVerified: map['isVerified'] as bool,
+      isActive: map['isActive'] as bool,
+      createdAt: DateTime.parse(map['createdAt'] as String),
+      lastLogin: map['lastLogin'] != null 
+          ? DateTime.parse(map['lastLogin'] as String) 
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'email': email,
+      'nickname': nickname,
+      'userType': userType,
+      'isVerified': isVerified,
+      'isActive': isActive,
+      'createdAt': createdAt.toIso8601String(),
+      'lastLogin': lastLogin?.toIso8601String(),
+    };
+  }
+}
+
+/// Modelo de request para actualizar el perfil de usuario
+class UpdateUserProfileRequest {
+  final String nickname;
+
+  const UpdateUserProfileRequest({
+    required this.nickname,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'nickname': nickname,
+    };
+  }
+}
+
 // ========== MODELOS PARA CALENDARIO DE LIMPIEZA ==========
 
 /// Modelo de respuesta del calendario de limpieza

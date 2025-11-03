@@ -22,14 +22,15 @@ class NoZonesConfiguredWidget extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: UIConstants.spacingMedium),
       padding: const EdgeInsets.all(UIConstants.spacingLarge),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
+        color: Colors.grey.withOpacity(0.15),
         borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
-        border: Border.all(color: Colors.blue[200]!),
+        border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.1),
+            color: Colors.grey.withOpacity(0.2),
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -39,13 +40,17 @@ class NoZonesConfiguredWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(UIConstants.spacingLarge),
             decoration: BoxDecoration(
-              color: Colors.blue[100],
+              color: Colors.grey.withOpacity(0.15),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.grey.withOpacity(0.5),
+                width: 3,
+              ),
             ),
             child: Icon(
               Icons.cleaning_services,
               size: UIConstants.iconSizeLarge,
-              color: Colors.blue[700],
+              color: Colors.grey[700],
             ),
           ),
           
@@ -57,7 +62,7 @@ class NoZonesConfiguredWidget extends StatelessWidget {
             style: TextStyle(
               fontSize: UIConstants.textSizeLarge,
               fontWeight: FontWeight.bold,
-              color: Colors.blue[800],
+              color: Colors.black87,
             ),
             textAlign: TextAlign.center,
           ),
@@ -69,7 +74,7 @@ class NoZonesConfiguredWidget extends StatelessWidget {
             message,
             style: TextStyle(
               fontSize: UIConstants.textSizeNormal,
-              color: Colors.blue[700],
+              color: Colors.black87,
               height: 1.4,
             ),
             textAlign: TextAlign.center,
@@ -84,7 +89,7 @@ class NoZonesConfiguredWidget extends StatelessWidget {
               icon: const Icon(Icons.settings),
               label: const Text('Configurar Zonas'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[600],
+                backgroundColor: Colors.grey[700],
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: UIConstants.spacingLarge,
