@@ -111,36 +111,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Color _getIconColor() {
-    switch (widget.mode) {
-      case ProductDetailMode.add:
-        return Colors.blue[600]!;
-      case ProductDetailMode.purchase:
-        return Colors.orange[600]!;
-      case ProductDetailMode.detail:
-        return Colors.green[600]!;
-    }
+    return Colors.grey[700]!;
   }
 
   Color _getBackgroundColor() {
-    switch (widget.mode) {
-      case ProductDetailMode.add:
-        return Colors.blue[50]!;
-      case ProductDetailMode.purchase:
-        return Colors.orange[50]!;
-      case ProductDetailMode.detail:
-        return Colors.green[50]!;
-    }
+    return Colors.grey.withOpacity(0.15);
   }
 
   Color _getBorderColor() {
-    switch (widget.mode) {
-      case ProductDetailMode.add:
-        return Colors.blue[200]!;
-      case ProductDetailMode.purchase:
-        return Colors.orange[200]!;
-      case ProductDetailMode.detail:
-        return Colors.green[200]!;
-    }
+    return Colors.grey.withOpacity(0.5);
   }
 
   @override
@@ -180,6 +159,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     color: _getBorderColor(),
                     width: 3,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                      spreadRadius: 1,
+                    ),
+                  ],
                 ),
                 child: Icon(
                   _getIcon(),
@@ -255,16 +242,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.green[50],
+                  color: Colors.grey.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green[200]!),
+                  border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
                 ),
                 child: Text(
                   '€${product.price?.toStringAsFixed(2) ?? '0.00'}',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green[700],
+                    color: Colors.black87,
                   ),
                 ),
               ),
@@ -320,21 +307,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.green[50],
+              color: Colors.grey.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.green[200]!),
+              border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle, color: Colors.green[700], size: 20),
+                Icon(Icons.check_circle, color: Colors.black87, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   'Producto Comprado',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.green[700],
+                    color: Colors.black87,
                   ),
                 ),
               ],
@@ -370,13 +357,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.orange[50],
+                color: Colors.grey.withOpacity(0.15),
                 shape: BoxShape.circle,
+                border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
               ),
               child: Icon(
                 Icons.euro,
                 size: 40,
-                color: Colors.orange[700],
+                color: Colors.grey[700],
               ),
             ),
             
@@ -430,7 +418,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.orange[400]!, width: 2),
+                  borderSide: BorderSide(color: Colors.grey[400]!, width: 2),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -467,7 +455,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: ElevatedButton(
                 onPressed: _confirmPurchase,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange[600],
+                  backgroundColor: Colors.grey[700],
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -545,13 +533,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.blue[50],
+                color: Colors.grey.withOpacity(0.15),
                 shape: BoxShape.circle,
+                border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
               ),
               child: Icon(
                 Icons.shopping_bag_outlined,
                 size: 40,
-                color: Colors.blue[700],
+                color: Colors.grey[700],
               ),
             ),
             
@@ -596,7 +585,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.blue[400]!, width: 2),
+                  borderSide: BorderSide(color: Colors.grey[400]!, width: 2),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -632,7 +621,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: ElevatedButton(
                 onPressed: _addProduct,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[600],
+                  backgroundColor: Colors.grey[700],
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(

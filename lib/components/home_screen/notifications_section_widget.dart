@@ -5,10 +5,12 @@ import '../../constants/ui_constants.dart';
 /// Widget que muestra la sección completa de notificaciones
 class NotificationsSectionWidget extends StatelessWidget {
   final List<app_notification.NotificationImpl> notifications;
+  final bool isLoading;
 
   const NotificationsSectionWidget({
     super.key,
     required this.notifications,
+    this.isLoading = false,
   });
 
   @override
@@ -67,6 +69,14 @@ class NotificationsSectionWidget extends StatelessWidget {
 
   /// Construye la lista de notificaciones
   Widget _buildNotificationsList() {
+    if (isLoading) {
+      return _buildLoadingState();
+    }
+    
+    if (notifications.isEmpty) {
+      return _buildEmptyState();
+    }
+    
     return Column(
       children: notifications
           .map((notification) => Padding(
@@ -74,6 +84,95 @@ class NotificationsSectionWidget extends StatelessWidget {
                 child: NotificationCardWidget(notification: notification),
               ))
           .toList(),
+    );
+  }
+
+  /// Construye el estado de carga
+  Widget _buildLoadingState() {
+    return Container(
+      padding: const EdgeInsets.all(UIConstants.spacingXLarge),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
+        border: Border.all(
+          color: Colors.blue[200]!,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
+            ),
+          ),
+          const SizedBox(height: UIConstants.spacingMedium),
+          Text(
+            'Cargando notificaciones...',
+            style: TextStyle(
+              fontSize: UIConstants.textSizeMedium,
+              fontWeight: FontWeight.w600,
+              color: Colors.blue[700],
+            ),
+          ),
+          const SizedBox(height: UIConstants.spacingSmall),
+          Text(
+            'Obteniendo las últimas notificaciones de tu casa',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: UIConstants.textSizeSmall,
+              color: Colors.blue[600],
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Construye el estado vacío cuando no hay notificaciones
+  Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.all(UIConstants.spacingXLarge),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.notifications_none,
+            size: 48,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: UIConstants.spacingMedium),
+          Text(
+            'No hay notificaciones',
+            style: TextStyle(
+              fontSize: UIConstants.textSizeMedium,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: UIConstants.spacingSmall),
+          Text(
+            'Las notificaciones aparecerán aquí cuando haya actividad en tu casa',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: UIConstants.textSizeSmall,
+              color: Colors.grey[500],
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -92,12 +191,20 @@ class NotificationCardWidget extends StatelessWidget {
     return Container(
       padding: UIConstants.notificationContainerPadding,
       decoration: BoxDecoration(
-        color: notification.displayColor.withOpacity(0.1),
+        color: notification.displayColor.withOpacity(0.15), // Mismo estilo que las cards
         borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
         border: Border.all(
-          color: notification.displayColor.withOpacity(0.3),
-          width: notification.priority.value == 4 ? 2 : 1,
+          color: notification.displayColor.withOpacity(0.5),
+          width: 3, // Mismo grosor que las cards
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: Row(
         children: [

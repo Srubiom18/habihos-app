@@ -100,17 +100,25 @@ class _ShoppingHistoryScreenState extends State<ShoppingHistoryScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: Colors.blue[50],
+              color: Colors.grey.withOpacity(0.15),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.blue[200]!,
+                color: Colors.grey.withOpacity(0.5),
                 width: 3,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                  spreadRadius: 1,
+                ),
+              ],
             ),
             child: Icon(
               Icons.history,
               size: 60,
-              color: Colors.blue[600],
+              color: Colors.grey[700],
             ),
           ),
           
@@ -128,7 +136,7 @@ class _ShoppingHistoryScreenState extends State<ShoppingHistoryScreen> {
           const SizedBox(height: 20),
           
           CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[700]!),
           ),
         ],
       ),
@@ -147,17 +155,25 @@ class _ShoppingHistoryScreenState extends State<ShoppingHistoryScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: Colors.red[50],
+                color: Colors.grey.withOpacity(0.15),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.red[200]!,
+                  color: Colors.grey.withOpacity(0.5),
                   width: 3,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                    spreadRadius: 1,
+                  ),
+                ],
               ),
               child: Icon(
                 Icons.error_outline,
                 size: 60,
-                color: Colors.red[600],
+                color: Colors.grey[700],
               ),
             ),
             
@@ -193,7 +209,7 @@ class _ShoppingHistoryScreenState extends State<ShoppingHistoryScreen> {
               child: ElevatedButton(
                 onPressed: _loadHistory,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red[600],
+                  backgroundColor: Colors.grey[700],
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -280,13 +296,18 @@ class _ShoppingHistoryScreenState extends State<ShoppingHistoryScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.withOpacity(0.15),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
             offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -297,16 +318,16 @@ class _ShoppingHistoryScreenState extends State<ShoppingHistoryScreen> {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: Colors.green[50],
+            color: Colors.grey.withOpacity(0.15),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.green[200]!,
-              width: 2,
+              color: Colors.grey.withOpacity(0.5),
+              width: 3,
             ),
           ),
           child: Icon(
             Icons.check_circle,
-            color: Colors.green[600],
+            color: Colors.black87,
             size: 28,
           ),
         ),
@@ -325,16 +346,16 @@ class _ShoppingHistoryScreenState extends State<ShoppingHistoryScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
+                color: Colors.grey.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue[200]!),
+                border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
               ),
               child: Text(
                 'Total: €${distribution.totalExpenses.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue[700],
+                  color: Colors.black87,
                 ),
               ),
             ),
@@ -354,26 +375,26 @@ class _ShoppingHistoryScreenState extends State<ShoppingHistoryScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.blue[50],
+              color: Colors.grey.withOpacity(0.15),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.blue[200]!),
+              border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildInfoColumn('Productos', '${distribution.includedItems.length}', Colors.blue[700]!),
+                _buildInfoColumn('Productos', '${distribution.includedItems.length}', Colors.black87),
                 Container(
                   width: 1,
                   height: 50,
-                  color: Colors.blue[200],
+                  color: Colors.grey.withOpacity(0.5),
                 ),
-                _buildInfoColumn('Miembros', '${distribution.totalMembers}', Colors.blue[700]!),
+                _buildInfoColumn('Miembros', '${distribution.totalMembers}', Colors.black87),
                 Container(
                   width: 1,
                   height: 50,
-                  color: Colors.blue[200],
+                  color: Colors.grey.withOpacity(0.5),
                 ),
-                _buildInfoColumn('Por Persona', '€${distribution.averageExpensePerMember.toStringAsFixed(2)}', Colors.green[700]!),
+                _buildInfoColumn('Por Persona', '€${distribution.averageExpensePerMember.toStringAsFixed(2)}', Colors.black87),
               ],
             ),
           ),
@@ -414,9 +435,9 @@ class _ShoppingHistoryScreenState extends State<ShoppingHistoryScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
       ),
       child: Row(
         children: [
@@ -453,9 +474,9 @@ class _ShoppingHistoryScreenState extends State<ShoppingHistoryScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
-        color: Colors.green[50],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.green[200]!),
+        border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
       ),
       child: Row(
         children: [
@@ -482,7 +503,7 @@ class _ShoppingHistoryScreenState extends State<ShoppingHistoryScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.green[700],
+              color: Colors.black87,
             ),
           ),
         ],

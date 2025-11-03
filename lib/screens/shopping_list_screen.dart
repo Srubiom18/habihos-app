@@ -271,7 +271,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
               icon: const Icon(Icons.refresh),
               label: const Text('Reintentar'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange[600],
+                backgroundColor: Colors.grey[700],
                 foregroundColor: Colors.white,
               ),
             ),
@@ -331,7 +331,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   ),
                 );
               },
-              backgroundColor: Colors.blue[600],
+              backgroundColor: Colors.grey[700],
               heroTag: "history_button",
               child: const Icon(Icons.history, color: Colors.white),
             ),
@@ -339,7 +339,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             // Botón de agregar producto
             FloatingActionButton(
               onPressed: _navigateToAddProduct,
-              backgroundColor: Colors.orange[600],
+              backgroundColor: Colors.grey[700],
               heroTag: "add_button",
               child: const Icon(Icons.add, color: Colors.white),
             ),
@@ -353,7 +353,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       padding: const EdgeInsets.only(bottom: 25),
       child: FloatingActionButton(
         onPressed: _navigateToAddProduct,
-        backgroundColor: Colors.orange[600],
+        backgroundColor: Colors.grey[700],
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -391,19 +391,19 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: Colors.grey.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue[200]!),
+                  border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.blue[600], size: 20),
+                    Icon(Icons.info_outline, color: Colors.grey[700], size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Todos los productos comprados han sido saldados. Agrega nuevos productos para crear una nueva distribución.',
                         style: TextStyle(
-                          color: Colors.blue[700],
+                          color: Colors.black87,
                           fontSize: 14,
                         ),
                       ),
@@ -444,9 +444,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   // 1. Card con gasto total
   // Botón para ver historial de compras
   Widget _buildHistoryButton() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      child: ElevatedButton.icon(
+    return ElevatedButton.icon(
         onPressed: () {
           Navigator.push(
             context,
@@ -458,79 +456,70 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         icon: const Icon(Icons.history, size: 20),
         label: const Text('Ver Historial de Compras'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey[100],
-          foregroundColor: Colors.grey[700],
+          backgroundColor: Colors.grey.withOpacity(0.15),
+          foregroundColor: Colors.black87,
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: Colors.grey[300]!),
+            side: BorderSide(color: Colors.grey.withOpacity(0.5), width: 3),
           ),
         ),
-      ),
     );
   }
 
   Widget _buildTotalExpenseCard(double totalExpenses) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
       height: 200,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.indigo[800]!,
-            Colors.indigo[600]!,
-            Colors.purple[700]!,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.grey.withOpacity(0.15), // Mismo estilo que las cards de limpieza
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.indigo.withOpacity(0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-            spreadRadius: 2,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
             offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          // Patrón de fondo decorativo
-          Positioned(
-            top: -20,
-            right: -20,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            // Patrón de fondo decorativo
+            Positioned(
+              top: -20,
+              right: -20,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey.withOpacity(0.3),
+                ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: -30,
-            left: -30,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
+            Positioned(
+              bottom: -30,
+              left: -30,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey.withOpacity(0.2),
+                ),
               ),
             ),
-          ),
-          
-          // Contenido principal
-          Padding(
-            padding: const EdgeInsets.all(24),
+            
+            // Contenido principal
+            Padding(
+              padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -543,16 +532,16 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                       width: 40,
                       height: 30,
                       decoration: BoxDecoration(
-                        color: Colors.amber[300],
+                        color: Colors.grey[600],
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.amber[100]!, width: 1),
+                        border: Border.all(color: Colors.grey[400]!, width: 1),
                       ),
                       child: Center(
                         child: Container(
                           width: 20,
                           height: 15,
                           decoration: BoxDecoration(
-                            color: Colors.amber[100],
+                            color: Colors.grey[400],
                             borderRadius: BorderRadius.circular(3),
                           ),
                         ),
@@ -562,13 +551,13 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.grey.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
+                      child: Text(
                         'HABIHOS',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.grey[800],
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1,
@@ -578,20 +567,20 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   ],
                 ),
                 
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
                 
                 // Número de tarjeta simulado
-                const Text(
+                Text(
                   '••••  ••••  ••••  1234',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
+                    color: Colors.grey[800],
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    letterSpacing: 2,
+                    letterSpacing: 1.5,
                   ),
                 ),
                 
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
                 
                 // Información del titular y gasto
                 Row(
@@ -600,20 +589,20 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'GASTO TOTAL',
                           style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
+                            color: Colors.grey[600],
+                            fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            letterSpacing: 1,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(
                           '€${totalExpenses.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: Colors.grey[900],
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
@@ -623,21 +612,21 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        const Text(
+                        Text(
                           'VÁLIDA HASTA',
                           style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 10,
+                            color: Colors.grey[600],
+                            fontSize: 9,
                             fontWeight: FontWeight.w500,
-                            letterSpacing: 1,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        const Text(
+                        const SizedBox(height: 2),
+                        Text(
                           '∞',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
+                            color: Colors.grey[900],
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -647,8 +636,9 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 ),
               ],
             ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -660,13 +650,18 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
       return Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.grey.withOpacity(0.15),
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withOpacity(0.2),
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -681,7 +676,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: Colors.black87,
               ),
             ),
           ),
@@ -690,17 +685,17 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           if (pendingItems.isNotEmpty) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.orange[50],
+              color: Colors.grey.withOpacity(0.15),
               child: Row(
                 children: [
-                  Icon(Icons.shopping_cart_outlined, size: 18, color: Colors.orange[700]),
+                  Icon(Icons.shopping_cart_outlined, size: 18, color: Colors.black87),
                   const SizedBox(width: 8),
               Text(
                     'Por Comprar (${pendingItems.length})',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.orange[700],
+                      color: Colors.black87,
                     ),
               ),
             ],
@@ -713,17 +708,17 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           if (purchasedItems.isNotEmpty) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.green[50],
+              color: Colors.grey.withOpacity(0.15),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle_outline, size: 18, color: Colors.green[700]),
+                  Icon(Icons.check_circle_outline, size: 18, color: Colors.black87),
                   const SizedBox(width: 8),
                   Text(
                     'Comprados (${purchasedItems.length})',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.green[700],
+                      color: Colors.black87,
                     ),
           ),
         ],
@@ -761,9 +756,13 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         onTap: () => _navigateToProductDetail(item),
         child: Container(
       padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        border: Border(
-              top: BorderSide(color: Colors.grey[200]!, width: 1),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
         ),
       ),
       child: Row(
@@ -818,15 +817,15 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-                  color: Colors.green[50],
+                  color: Colors.grey.withOpacity(0.15),
           borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green[200]!),
+                  border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
                 ),
                 child: Text(
                   '€${item.price?.toStringAsFixed(2) ?? '0.00'}',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.green[700],
+                    color: Colors.black87,
                     fontSize: 15,
                   ),
                 ),
@@ -843,11 +842,14 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         onTap: () => _navigateToProductDetail(item),
         child: Container(
           padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(color: Colors.grey[200]!, width: 1),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.5),
+              width: 3,
             ),
-            color: isDistributionActive ? Colors.grey[50] : null,
           ),
           child: Row(
             children: [
@@ -875,7 +877,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                         'Compras deshabilitadas durante distribución',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.orange[600],
+                          color: Colors.black87,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -888,12 +890,13 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   isDistributionActive ? 'Bloqueado' : 'Pendiente',
                   style: const TextStyle(fontSize: 12),
                 ),
-                backgroundColor: isDistributionActive ? Colors.red[50] : Colors.orange[50],
+                backgroundColor: isDistributionActive ? Colors.red[50] : Colors.grey.withOpacity(0.15),
                 labelStyle: TextStyle(
-                  color: isDistributionActive ? Colors.red[700] : Colors.orange[700],
+                  color: isDistributionActive ? Colors.red[700] : Colors.black87,
                 ),
                 side: BorderSide(
-                  color: isDistributionActive ? Colors.red[200]! : Colors.orange[200]!,
+                  color: isDistributionActive ? Colors.red[200]! : Colors.grey.withOpacity(0.5),
+                  width: isDistributionActive ? 1 : 3,
                 ),
               ),
             ],
@@ -951,13 +954,18 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.grey.withOpacity(0.15), // Mismo estilo que las cards de limpieza
         borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.5),
+              width: 3,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withOpacity(0.2),
                 blurRadius: 8,
-                offset: const Offset(0, 2),
+                offset: const Offset(0, 4),
+                spreadRadius: 1,
               ),
             ],
           ),
@@ -969,7 +977,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
+              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 24),
@@ -1052,13 +1060,18 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.withOpacity(0.15), // Mismo estilo que las cards de limpieza
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withOpacity(0.2),
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -1070,7 +1083,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
+              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 16),
@@ -1078,7 +1091,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             'Calcula cómo se deben repartir los gastos entre todos los miembros de la casa.',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: Colors.black54,
             ),
           ),
           const SizedBox(height: 20),
@@ -1102,7 +1115,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     : 'Calcular Repartición',
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[600],
+                backgroundColor: Colors.grey[700],
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -1139,13 +1152,18 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.withOpacity(0.15), // Mismo estilo que las cards de limpieza
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withOpacity(0.2),
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
           ),
@@ -1157,7 +1175,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 style: TextStyle(
               fontSize: 20,
                   fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
+              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 16),
@@ -1166,9 +1184,9 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.blue[50],
+              color: Colors.grey.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue[200]!),
+              border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
             ),
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -1188,7 +1206,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                       style: TextStyle(
                         fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue[700],
+                          color: Colors.black87,
                         ),
                       ),
                     ],
@@ -1196,7 +1214,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 Container(
                   width: 1,
                   height: 40,
-                  color: Colors.blue[200],
+                  color: Colors.grey.withOpacity(0.5),
                   ),
                   Column(
                     children: [
@@ -1213,7 +1231,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                       style: TextStyle(
                         fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue[700],
+                          color: Colors.black87,
                         ),
                       ),
                 ],
@@ -1243,11 +1261,11 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
               padding: const EdgeInsets.all(14),
               margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
-                color: isCurrentUser ? Colors.orange[50] : Colors.grey[50],
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isCurrentUser ? Colors.orange[300]! : Colors.grey[200]!,
-                  width: isCurrentUser ? 2 : 1,
+                  color: Colors.grey.withOpacity(0.5),
+                  width: 3,
                 ),
               ),
               child: Row(
@@ -1284,7 +1302,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange[700],
+                                  color: Colors.grey[700],
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: const Text(
@@ -1320,7 +1338,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                          color: summary.balance >= 0 ? Colors.green[700] : Colors.red[700],
+                          color: summary.balance >= 0 ? Colors.black87 : Colors.red[700],
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -1357,21 +1375,21 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.green[50],
+                      color: Colors.grey.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.green[200]!),
+                      border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
           children: [
-                        Icon(Icons.check_circle, color: Colors.green[700]),
+                        Icon(Icons.check_circle, color: Colors.black87),
                         const SizedBox(width: 8),
                         Text(
                           '¡Todo está balanceado!',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: Colors.green[700],
+                            color: Colors.black87,
               ),
           ),
         ],
@@ -1443,16 +1461,16 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.blue[50],
+                            color: Colors.grey.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.blue[200]!),
+                            border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
                           ),
                           child: Text(
                             '€${transfer.amount.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontSize: 14,
                           fontWeight: FontWeight.bold,
-                              color: Colors.blue[700],
+                              color: Colors.black87,
                         ),
                       ),
                     ),
@@ -1475,23 +1493,23 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.orange[50],
+        color: Colors.grey.withOpacity(0.15),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange[200]!),
+        border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.payment, color: Colors.orange[700], size: 20),
+              Icon(Icons.payment, color: Colors.black87, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Confirmación de Pagos',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.orange[700],
+                  color: Colors.black87,
                 ),
               ),
             ],
@@ -1511,21 +1529,21 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 ? Container(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
-                      color: Colors.green[50],
+                      color: Colors.grey.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.green[300]!, width: 2),
+                      border: Border.all(color: Colors.grey.withOpacity(0.5), width: 3),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.check_circle, color: Colors.green[700], size: 24),
+                        Icon(Icons.check_circle, color: Colors.black87, size: 24),
                         const SizedBox(width: 12),
                         Text(
                           'Pago Confirmado',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.green[700],
+                            color: Colors.black87,
                           ),
                         ),
                       ],
@@ -1548,7 +1566,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                       style: const TextStyle(fontSize: 16),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[600],
+                      backgroundColor: Colors.grey[700],
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

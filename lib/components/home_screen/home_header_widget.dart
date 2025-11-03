@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../constants/ui_constants.dart';
 import '../../services/common/logout_service.dart';
-import '../../services/common/snackbar_service.dart';
 import '../../screens/settings_screen.dart';
+import '../../screens/user_profile_screen.dart';
 
 /// Widget que muestra el header del home con nombre de casa y avatar
 class HomeHeaderWidget extends StatelessWidget {
@@ -16,35 +16,56 @@ class HomeHeaderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(
+      margin: const EdgeInsets.only(
+        left: UIConstants.screenPadding,
+        right: UIConstants.screenPadding,
         top: UIConstants.screenPadding,
       ),
       child: Row(
         children: [
-          // Nombre de la casa pegado al margen izquierdo
-          Padding(
-            padding: const EdgeInsets.only(left: UIConstants.screenPadding),
-            child: Text(
-              houseName,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: UIConstants.textColor,
-                letterSpacing: -0.5,
-                height: 1.2,
+          // Contenedor con el nombre de la casa
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.5),
+                  width: 3,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                    spreadRadius: 1,
+                  ),
+                ],
               ),
-              overflow: TextOverflow.ellipsis,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  houseName,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: UIConstants.textColor,
+                    letterSpacing: -0.5,
+                    height: 1.0,
+                  ),
+                  textAlign: TextAlign.left,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
           ),
           
-          // Espacio flexible para empujar el avatar a la derecha
-          const Spacer(),
+          const SizedBox(width: 16), // Espacio entre contenedor y avatar
           
-          // Avatar del usuario con menú desplegable pegado al margen derecho
-          Padding(
-            padding: const EdgeInsets.only(right: UIConstants.screenPadding),
-            child: _buildAvatar(context),
-          ),
+          // Avatar del usuario con menú desplegable (fuera del contenedor)
+          _buildAvatar(context),
         ],
       ),
     );
@@ -52,43 +73,39 @@ class HomeHeaderWidget extends StatelessWidget {
 
   /// Construye el avatar del usuario con menú desplegable
   Widget _buildAvatar(BuildContext context) {
+    // Calcular la altura del contenedor basándose en el padding y tamaño de fuente
+    // Padding: 16 * 2 = 32, Altura de texto aproximada: 28 * 1.2 = 33.6
+    // Total aproximado: 32 + 33.6 = 65.6, redondeamos a 66
+    const double containerHeight = 66;
+    
     return PopupMenuButton<String>(
       offset: const Offset(0, 50),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: Container(
-        width: 48,
-        height: 48,
+        width: containerHeight,
+        height: containerHeight,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              UIConstants.primaryColor,
-              UIConstants.primaryColor.withOpacity(0.8),
-            ],
-          ),
+          color: Colors.grey.withOpacity(0.15),
           shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.grey.withOpacity(0.5),
+            width: 3,
+          ),
           boxShadow: [
             BoxShadow(
-              color: UIConstants.primaryColor.withOpacity(0.4),
+              color: Colors.grey.withOpacity(0.2),
               spreadRadius: 0,
-              blurRadius: 12,
+              blurRadius: 8,
               offset: const Offset(0, 4),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 0,
-              blurRadius: 4,
-              offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: const Icon(
+        child: Icon(
           Icons.person_rounded,
-          color: Colors.white,
-          size: 24,
+          color: Colors.grey[700],
+          size: 32, // Aumentar el tamaño del icono proporcionalmente
         ),
       ),
       itemBuilder: (BuildContext context) => [
@@ -102,12 +119,16 @@ class HomeHeaderWidget extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: Colors.blue[50],
+                    color: Colors.grey.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.grey.withOpacity(0.5),
+                      width: 2,
+                    ),
                   ),
                   child: Icon(
                     Icons.person_outline_rounded,
-                    color: Colors.blue[600],
+                    color: Colors.black87,
                     size: 20,
                   ),
                 ),
@@ -134,12 +155,16 @@ class HomeHeaderWidget extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: Colors.grey.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.grey.withOpacity(0.5),
+                      width: 2,
+                    ),
                   ),
                   child: Icon(
                     Icons.settings_outlined,
-                    color: Colors.grey[600],
+                    color: Colors.black87,
                     size: 20,
                   ),
                 ),
@@ -167,22 +192,26 @@ class HomeHeaderWidget extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: Colors.red[50],
+                    color: Colors.grey.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.grey.withOpacity(0.5),
+                      width: 2,
+                    ),
                   ),
                   child: Icon(
                     Icons.logout_rounded,
-                    color: Colors.red[600],
+                    color: Colors.black87,
                     size: 20,
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
+                const Text(
                   'Cerrar Sesión',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Colors.red[600],
+                    color: UIConstants.textColor,
                   ),
                 ),
               ],
@@ -193,9 +222,10 @@ class HomeHeaderWidget extends StatelessWidget {
       onSelected: (String value) {
         switch (value) {
           case 'profile':
-            SnackBarService().showInfo(
-              context,
-              '👤 Administrando perfil...',
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const UserProfileScreen(),
+              ),
             );
             break;
           case 'settings':

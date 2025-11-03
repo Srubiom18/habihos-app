@@ -1,4 +1,8 @@
+import 'dart:convert';
 import '../../interfaces/home_screen/notification.dart' as app_notification;
+import '../../models/notification_models.dart';
+import '../../config/app_config.dart';
+import '../http_interceptor_service.dart';
 
 /// Servicio que maneja la lógica de negocio relacionada con las notificaciones
 /// 
@@ -18,127 +22,99 @@ class NotificationService {
   /// Timestamp de la última actualización
   DateTime? _lastUpdated;
 
+  /// Estado de carga de las notificaciones
+  bool _isLoading = false;
+
   /// Duración del cache en minutos
   static const int cacheDurationMinutes = 5;
 
-  /// Inicializa el servicio con datos de ejemplo (para desarrollo)
-  void _initializeWithExampleData() {
-    _notifications = [
-      app_notification.NotificationImpl(
-        id: '1',
-        type: app_notification.NotificationType.urgent,
-        priority: app_notification.NotificationPriority.critical,
-        title: '¡Tiempo limitado!',
-        message: 'Te quedan 2 minutos para limpiar la zona actual ⏰',
-        createdAt: DateTime.now().subtract(const Duration(minutes: 2)),
-      ),
-      app_notification.NotificationImpl(
-        id: '2',
-        type: app_notification.NotificationType.payment,
-        priority: app_notification.NotificationPriority.high,
-        title: 'Factura pendiente',
-        message: 'Recordatorio: La factura de la luz vence mañana 💡',
-        createdAt: DateTime.now().subtract(const Duration(hours: 4)),
-      ),
-      app_notification.NotificationImpl(
-        id: '3',
-        type: app_notification.NotificationType.maintenance,
-        priority: app_notification.NotificationPriority.high,
-        title: 'Mantenimiento',
-        message: 'El técnico vendrá mañana a las 10:00 AM 🔧',
-        createdAt: DateTime.now().subtract(const Duration(hours: 6)),
-      ),
-      app_notification.NotificationImpl(
-        id: '4',
-        type: app_notification.NotificationType.roommate,
-        priority: app_notification.NotificationPriority.medium,
-        title: 'Mensaje de Ana',
-        message: '¡Hola! ¿Podrías comprar pan cuando salgas? 🍞',
-        createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
-        createdBy: 'ana_user_id',
-      ),
-      app_notification.NotificationImpl(
-        id: '5',
-        type: app_notification.NotificationType.roommate,
-        priority: app_notification.NotificationPriority.medium,
-        title: 'Mensaje de Carlos',
-        message: '¿Alguien puede recoger el paquete del buzón? 📦',
-        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-        createdBy: 'carlos_user_id',
-      ),
-      app_notification.NotificationImpl(
-        id: '6',
-        type: app_notification.NotificationType.roommate,
-        priority: app_notification.NotificationPriority.medium,
-        title: 'Mensaje de María',
-        message: '¿Podrías bajar la basura? El contenedor está lleno 🗑️',
-        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
-        createdBy: 'maria_user_id',
-      ),
-      app_notification.NotificationImpl(
-        id: '7',
-        type: app_notification.NotificationType.reminder,
-        priority: app_notification.NotificationPriority.low,
-        title: 'Recordatorio',
-        message: 'El pago del WiFi vence en 3 días 💳',
-        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-      ),
-      app_notification.NotificationImpl(
-        id: '8',
-        type: app_notification.NotificationType.reminder,
-        priority: app_notification.NotificationPriority.low,
-        title: 'Lista de compras',
-        message: 'Falta leche y huevos en la nevera 🥛🥚',
-        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-      ),
-      app_notification.NotificationImpl(
-        id: '9',
-        type: app_notification.NotificationType.cleaning,
-        priority: app_notification.NotificationPriority.low,
-        title: '¡Zona completada!',
-        message: '¡Excelente trabajo! La zona está impecable ✨',
-        createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
-      ),
-    ];
-    _lastUpdated = DateTime.now();
-  }
+  /// URL base para las notificaciones
+  static const String _baseEndpoint = '/notifications';
 
   /// Obtiene todas las notificaciones (con cache)
   /// 
-  /// Retorna la lista completa de notificaciones. Si no hay datos
-  /// en cache, inicializa con datos de ejemplo.
+  /// Retorna la lista completa de notificaciones cargadas desde la API.
+  /// Si no hay datos en cache, retorna lista vacía.
   /// 
   /// Retorna lista inmutable de notificaciones
   List<app_notification.NotificationImpl> getAllNotifications() {
-    if (_notifications.isEmpty) {
-      _initializeWithExampleData();
-    }
     return List.unmodifiable(_notifications);
   }
 
+  /// Verifica si las notificaciones están cargando
+  bool get isLoading => _isLoading;
+
+  /// Verifica si hay notificaciones cargadas
+  bool get hasNotifications => _notifications.isNotEmpty;
+
   /// Carga notificaciones desde la API
   /// 
-  /// Simula una llamada a la API para obtener notificaciones.
-  /// En caso de error, utiliza datos de ejemplo como fallback.
+  /// Obtiene las notificaciones del usuario actual desde la API.
   /// 
   /// Retorna lista de notificaciones cargadas
   Future<List<app_notification.NotificationImpl>> loadNotificationsFromAPI() async {
+    _isLoading = true;
+    
     try {
-      // TODO: Implementar llamada real a la API
-      // final response = await _apiService.getNotifications();
-      // _notifications = response.map((json) => app_notification.NotificationImpl.fromMap(json)).toList();
+      // Construir la URL del endpoint (sin parámetros, el token contiene la información)
+      final url = '${AppConfig.baseUrl}${AppConfig.apiVersion}$_baseEndpoint';
+      print('🔔 Cargando notificaciones desde: $url');
       
-      // Por ahora, usar datos de ejemplo
-      _initializeWithExampleData();
-      _lastUpdated = DateTime.now();
+      // Realizar la petición HTTP (HttpInterceptorService maneja automáticamente el token)
+      final response = await HttpInterceptorService.get(url).timeout(
+        const Duration(milliseconds: AppConfig.connectionTimeout),
+      );
       
-      return _notifications;
+      print('🔔 Respuesta del servidor: ${response.statusCode}');
+      print('🔔 Body de la respuesta: ${response.body}');
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = json.decode(response.body);
+        print('🔔 JSON parseado: $jsonList');
+        
+        _notifications = jsonList
+            .map((json) {
+              print('🔔 Procesando notificación: $json');
+              return NotificationResponse.fromJson(json as Map<String, dynamic>);
+            })
+            .map((notification) {
+              print('🔔 Convirtiendo a NotificationImpl: ${notification.id}');
+              return notification.toNotificationImpl();
+            })
+            .toList();
+        _lastUpdated = DateTime.now();
+        print('🔔 Notificaciones cargadas exitosamente: ${_notifications.length}');
+        return _notifications;
+      } else if (response.statusCode == 401) {
+        throw Exception('Sesión expirada. Inicia sesión nuevamente.');
+      } else {
+        throw Exception('Error del servidor: ${response.statusCode}');
+      }
     } catch (e) {
-      // En caso de error, usar datos de ejemplo
-      _initializeWithExampleData();
-      return _notifications;
+      print('🔔 Error al cargar notificaciones: $e');
+      // En caso de error, limpiar notificaciones y re-lanzar el error
+      _notifications.clear();
+      rethrow;
+    } finally {
+      _isLoading = false;
     }
   }
+
+  /// Fuerza la recarga de notificaciones desde la API
+  /// 
+  /// Limpia el cache y carga las notificaciones más recientes.
+  /// Útil para refrescar los datos cuando se sabe que han cambiado.
+  /// 
+  /// Retorna lista de notificaciones cargadas
+  Future<List<app_notification.NotificationImpl>> forceReload() async {
+    // Limpiar cache
+    _notifications.clear();
+    _lastUpdated = null;
+    
+    // Cargar desde la API
+    return await loadNotificationsFromAPI();
+  }
+
 
   /// Verifica si el cache está expirado
   /// 
