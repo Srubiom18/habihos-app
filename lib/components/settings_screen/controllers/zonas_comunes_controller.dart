@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../services/cleaning_area_service.dart';
 import '../../../services/cleaning_calendar_service.dart';
 import '../../../services/cleaning_rotation_service.dart';
+import '../../../services/cleaning_rotation_exclusion_service.dart';
 import '../../../services/common/zones_update_notifier_service.dart';
 import '../../../services/house/house_member_service.dart';
 import '../../../models/api_models.dart';
@@ -313,17 +314,6 @@ class ZonasComunesController extends ChangeNotifier {
     }
   }
 
-  /// Obtiene el assignmentId para un usuario específico en una zona específica
-  String? getAssignmentIdForUser(String areaId, String memberId) {
-    try {
-      final assignment = _fixedAssignments.firstWhere(
-        (assignment) => assignment.cleaningAreaId == areaId && assignment.memberId == memberId,
-      );
-      return assignment.assignmentId;
-    } catch (e) {
-      return null; // No se encontró la asignación
-    }
-  }
 
   // ========== MÉTODOS DE GESTIÓN DE ROTACIÓN ==========
 
@@ -577,6 +567,42 @@ class ZonasComunesController extends ChangeNotifier {
   void _startRotationCountdownFromNextDate() {
     // Delegar al método que usa el tiempo calculado por el servidor
     _startRotationCountdownFromCalendar();
+  }
+
+  // ========== MÉTODOS DE GESTIÓN DE EXCLUSIONES ==========
+
+  /// Crea una exclusión de rotación para un usuario en una zona específica
+  Future<void> createRotationExclusion(String memberId, String cleaningAreaId, {String? reason}) async {
+    try {
+      await CleaningRotationExclusionService.createExclusion(
+        memberId,
+        cleaningAreaId,
+        reason: reason,
+      );
+      
+      // Notificar que se creó una exclusión
+      ZonesUpdateNotifierService().notifyZonesChanged();
+      
+      // Recargar el calendario para obtener los datos actualizados
+      await loadCleaningCalendar();
+    } catch (e) {
+      rethrow; // Re-lanzar para que la UI pueda manejar el error
+    }
+  }
+
+  /// Elimina una exclusión de rotación existente
+  Future<void> removeRotationExclusion(String exclusionId) async {
+    try {
+      await CleaningRotationExclusionService.removeExclusion(exclusionId);
+      
+      // Notificar que se eliminó una exclusión
+      ZonesUpdateNotifierService().notifyZonesChanged();
+      
+      // Recargar el calendario para obtener los datos actualizados
+      await loadCleaningCalendar();
+    } catch (e) {
+      rethrow; // Re-lanzar para que la UI pueda manejar el error
+    }
   }
 
   @override

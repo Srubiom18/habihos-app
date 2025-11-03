@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/ui_constants.dart';
-import 'auth_type_selector_widget.dart';
-import 'auth_text_field_widget.dart';
+import 'auth_types.dart';
 
 /// Widget que contiene los formularios de autenticación
 class AuthFormWidget extends StatelessWidget {
@@ -54,18 +53,78 @@ class AuthFormWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Form(
       key: formKey,
+      child: Expanded(
+        child: switch (selectedAuthType) {
+          AuthType.login => _buildLoginForm(),
+          AuthType.register => _buildRegisterForm(),
+          AuthType.guest => _buildGuestForm(),
+        },
+      ),
+    );
+  }
+
+  /// Construye un campo de texto elegante
+  Widget _buildElegantTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+    Color? backgroundColor,
+  }) {
+    return Container(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  switch (selectedAuthType) {
-                    AuthType.login => _buildLoginForm(),
-                    AuthType.register => _buildRegisterForm(),
-                    AuthType.guest => _buildGuestForm(),
-                  },
-                ],
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            height: 60,
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.grey[50],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey[300]!),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TextFormField(
+              controller: controller,
+              keyboardType: keyboardType,
+              obscureText: obscureText,
+              validator: validator,
+              style: const TextStyle(fontSize: 18),
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 16,
+                ),
+                prefixIcon: Icon(
+                  icon,
+                  color: Colors.grey[600],
+                  size: 24,
+                ),
+                suffixIcon: suffixIcon,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 18,
+                ),
               ),
             ),
           ),
@@ -77,14 +136,15 @@ class AuthFormWidget extends StatelessWidget {
   /// Construye el formulario de login
   Widget _buildLoginForm() {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        AuthTextFieldWidget(
+        // Campo de email
+        _buildElegantTextField(
           controller: emailController,
           label: 'Correo electrónico',
           hint: 'tu@email.com',
           icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
-          authType: selectedAuthType,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Por favor ingresa tu email';
@@ -95,14 +155,14 @@ class AuthFormWidget extends StatelessWidget {
             return null;
           },
         ),
-        const SizedBox(height: UIConstants.spacingLarge),
-        AuthTextFieldWidget(
+        const SizedBox(height: 32),
+        // Campo de contraseña
+        _buildElegantTextField(
           controller: passwordController,
           label: 'Contraseña',
           hint: 'Tu contraseña',
           icon: Icons.lock_outline,
           obscureText: !isPasswordVisible,
-          authType: selectedAuthType,
           suffixIcon: IconButton(
             icon: Icon(
               isPasswordVisible ? Icons.visibility : Icons.visibility_off,
@@ -120,27 +180,31 @@ class AuthFormWidget extends StatelessWidget {
             return null;
           },
         ),
-        const SizedBox(height: UIConstants.spacingMedium + 2),
+        const SizedBox(height: 24),
+        // Opciones adicionales
         Row(
-          children: [
-            Checkbox(
-              value: rememberMe,
-              onChanged: (value) => onRememberMeChanged(value ?? false),
-              activeColor: Colors.blue[600],
-            ),
-            const Text('Recordarme', style: TextStyle(fontSize: UIConstants.textSizeNormal)),
-            const Spacer(),
-            TextButton(
-              onPressed: onForgotPassword,
-              child: Text(
-                '¿Olvidaste tu contraseña?',
-                style: TextStyle(
-                  color: Colors.blue[600],
-                  fontSize: UIConstants.textSizeXSmall + 1,
+            children: [
+              Checkbox(
+                value: rememberMe,
+                onChanged: (value) => onRememberMeChanged(value ?? false),
+                activeColor: Colors.blue[600],
+              ),
+              const Text(
+                'Recordarme',
+                style: TextStyle(fontSize: 16),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: onForgotPassword,
+                child: Text(
+                  '¿Olvidaste tu contraseña?',
+                  style: TextStyle(
+                    color: Colors.blue[600],
+                    fontSize: 16,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
         ),
       ],
     );
@@ -149,13 +213,14 @@ class AuthFormWidget extends StatelessWidget {
   /// Construye el formulario de registro
   Widget _buildRegisterForm() {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        AuthTextFieldWidget(
+        // Campo de nombre
+        _buildElegantTextField(
           controller: nameController,
           label: 'Nombre completo',
           hint: 'Tu nombre completo',
           icon: Icons.person_outline,
-          authType: selectedAuthType,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Por favor ingresa tu nombre';
@@ -166,14 +231,14 @@ class AuthFormWidget extends StatelessWidget {
             return null;
           },
         ),
-        const SizedBox(height: UIConstants.spacingLarge),
-        AuthTextFieldWidget(
+        const SizedBox(height: 24),
+        // Campo de email
+        _buildElegantTextField(
           controller: emailController,
           label: 'Correo electrónico',
           hint: 'tu@email.com',
           icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
-          authType: selectedAuthType,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Por favor ingresa tu email';
@@ -184,14 +249,14 @@ class AuthFormWidget extends StatelessWidget {
             return null;
           },
         ),
-        const SizedBox(height: UIConstants.spacingLarge),
-        AuthTextFieldWidget(
+        const SizedBox(height: 24),
+        // Campo de contraseña
+        _buildElegantTextField(
           controller: passwordController,
           label: 'Contraseña',
           hint: 'Mínimo 6 caracteres',
           icon: Icons.lock_outline,
           obscureText: !isPasswordVisible,
-          authType: selectedAuthType,
           suffixIcon: IconButton(
             icon: Icon(
               isPasswordVisible ? Icons.visibility : Icons.visibility_off,
@@ -209,14 +274,14 @@ class AuthFormWidget extends StatelessWidget {
             return null;
           },
         ),
-        const SizedBox(height: UIConstants.spacingLarge),
-        AuthTextFieldWidget(
+        const SizedBox(height: 24),
+        // Campo de confirmar contraseña
+        _buildElegantTextField(
           controller: confirmPasswordController,
           label: 'Confirmar contraseña',
           hint: 'Repite tu contraseña',
           icon: Icons.lock_outline,
           obscureText: !isConfirmPasswordVisible,
-          authType: selectedAuthType,
           suffixIcon: IconButton(
             icon: Icon(
               isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
@@ -234,7 +299,7 @@ class AuthFormWidget extends StatelessWidget {
             return null;
           },
         ),
-        const SizedBox(height: UIConstants.spacingMedium + 2),
+        const SizedBox(height: 20),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -275,37 +340,40 @@ class AuthFormWidget extends StatelessWidget {
   /// Construye el formulario de invitado
   Widget _buildGuestForm() {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        // Información de acceso temporal
         Container(
-          padding: const EdgeInsets.all(UIConstants.spacingMedium + 2),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.orange[50],
-            borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius + 2),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.orange[200]!),
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline, color: Colors.orange[700], size: UIConstants.iconSizeXSmall + 4),
-              const SizedBox(width: UIConstants.spacingMedium),
+              Icon(Icons.info_outline, color: Colors.orange[700], size: 20),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   'Acceso temporal con PINs de la casa y personal',
                   style: TextStyle(
-                    fontSize: UIConstants.textSizeXSmall,
+                    fontSize: 14,
                     color: Colors.orange[600],
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: UIConstants.spacingLarge),
-        AuthTextFieldWidget(
+        const SizedBox(height: 32),
+        // Campo de nickname
+        _buildElegantTextField(
           controller: nicknameController,
           label: 'Nickname',
           hint: 'Cómo te gustaría que te llamen',
           icon: Icons.person_outline,
-          authType: selectedAuthType,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Por favor ingresa tu nickname';
@@ -316,14 +384,14 @@ class AuthFormWidget extends StatelessWidget {
             return null;
           },
         ),
-        const SizedBox(height: UIConstants.spacingLarge),
-        AuthTextFieldWidget(
+        const SizedBox(height: 24),
+        // Campo de PIN de la casa
+        _buildElegantTextField(
           controller: housePinController,
           label: 'PIN de la casa',
           hint: 'PIN proporcionado por el administrador',
           icon: Icons.home_outlined,
           keyboardType: TextInputType.number,
-          authType: selectedAuthType,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Por favor ingresa el PIN de la casa';
@@ -334,15 +402,15 @@ class AuthFormWidget extends StatelessWidget {
             return null;
           },
         ),
-        const SizedBox(height: UIConstants.spacingLarge),
-        AuthTextFieldWidget(
+        const SizedBox(height: 24),
+        // Campo de PIN personal
+        _buildElegantTextField(
           controller: userPinController,
           label: 'Tu PIN personal',
           hint: 'PIN personal para tu acceso',
           icon: Icons.lock_outline,
           keyboardType: TextInputType.number,
           obscureText: !isUserPinVisible,
-          authType: selectedAuthType,
           suffixIcon: IconButton(
             icon: Icon(
               isUserPinVisible ? Icons.visibility : Icons.visibility_off,

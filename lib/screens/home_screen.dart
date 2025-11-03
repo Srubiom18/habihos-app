@@ -41,6 +41,11 @@ class _HomeScreenState extends State<HomeScreen> {
   int get currentTaskIndex => _taskRotationService.currentTaskIndex;
   bool get isCompleted => _taskRotationService.isCompleted;
   
+  // Variables para almacenar las áreas filtradas y ordenadas
+  CleaningArea? _currentUserArea;
+  List<CleaningArea> _otherAreas = [];
+  
+  
   // Getters para el estado del calendario
   bool get hasConfiguredZones => _cleaningService.hasConfiguredZones;
   String get calendarMessage => _cleaningService.calendarMessage;
@@ -68,6 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       // Forzar actualización del calendario
       await _cleaningService.forceUpdate();
+      
+      // Recargar las áreas específicas del usuario
+      await _loadUserSpecificAreas();
       
       if (mounted) {
         setState(() {});
@@ -115,6 +123,9 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       await _cleaningService.initializeFromAPI();
       
+      // Cargar las áreas filtradas y ordenadas según el usuario actual
+      await _loadUserSpecificAreas();
+      
       // Solo iniciar la rotación si hay zonas configuradas
       if (hasConfiguredZones) {
         _taskRotationService.startTaskRotation();
@@ -135,6 +146,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Carga las áreas específicas del usuario (asignada y otras)
+  Future<void> _loadUserSpecificAreas() async {
+    try {
+      // Obtener el área asignada al usuario actual
+      _currentUserArea = await _cleaningService.getCurrentUserAssignedArea();
+      
+      // Obtener las otras áreas ordenadas
+      _otherAreas = await _cleaningService.getOtherAreasForUser();
+    } catch (e) {
+      // Si hay error, usar la lógica original
+      _currentUserArea = _cleaningService.getCurrentArea(currentTaskIndex);
+      _otherAreas = _cleaningService.getOtherAreas(currentTaskIndex);
+    }
+  }
+
 
 
   void _markAsCompleted() {
@@ -142,53 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  /// Construye el mensaje de información de rotación
-  Widget _buildRotationInfo() {
-    // Solo mostrar si la rotación está activa
-    if (!_cleaningService.isRotationActive) {
-      return const SizedBox.shrink();
-    }
 
-    // Obtener información de rotación de la API
-    final calendarResponse = _cleaningService.getCalendarResponse();
-    final rotationDays = calendarResponse?.rotationDays ?? 7;
-    
-    // Formatear el texto de duración
-    String durationText;
-    if (rotationDays == 1) {
-      durationText = 'diaria';
-    } else if (rotationDays == 7) {
-      durationText = 'semanal';
-    } else if (rotationDays == 30) {
-      durationText = 'mensual';
-    } else {
-      durationText = 'cada $rotationDays días';
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.amber[50],
-        borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
-        border: Border.all(color: Colors.amber[200]!),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.schedule, color: Colors.amber[700], size: 14),
-          const SizedBox(width: UIConstants.spacingSmall),
-          Text(
-            'Rotación $durationText',
-            style: TextStyle(
-              fontSize: UIConstants.textSizeXSmall,
-              color: Colors.amber[800],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   void dispose() {
@@ -274,8 +254,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Construye el contenido normal cuando hay zonas configuradas
   Widget _buildNormalContent() {
-    final currentArea = _cleaningService.getCurrentArea(currentTaskIndex);
-    final otherAreas = _cleaningService.getOtherAreas(currentTaskIndex);
+    // Usar las áreas específicas del usuario si están disponibles, sino usar la lógica original
+    final currentArea = _currentUserArea ?? _cleaningService.getCurrentArea(currentTaskIndex);
+    final otherAreas = _otherAreas.isNotEmpty ? _otherAreas : _cleaningService.getOtherAreas(currentTaskIndex);
     
     return Stack(
       children: [
@@ -308,10 +289,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     
                     const SizedBox(height: UIConstants.spacingLarge),
                     
-                    // Mensaje de tiempo restante
-                    _buildRotationInfo(),
-                    
-                    const SizedBox(height: UIConstants.spacingMedium),
                     
                     // Botón de acción
                     ActionButtonWidget(
@@ -340,11 +317,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildNotificationsSheet() {
     return DraggableScrollableSheet(
       controller: _sheetController,
-      initialChildSize: 0.5,  // Comienza al 50% de la pantalla
-      minChildSize: 0.2,      // Mínimo 20%
-      maxChildSize: 0.85,     // Máximo 85%
-      snap: true,             // Snap automático activado
-      snapSizes: const [0.2, 0.5, 0.85], // Se ancla en 20%, 50% y 85%
+      initialChildSize: 0.5,          // Tamaño inicial fijo al 50%
+      minChildSize: 0.2,              // Mínimo 20%
+      maxChildSize: 0.85,             // Máximo 85%
+      snap: true,                     // Snap automático activado
+      snapSizes: const [0.2, 0.5, 0.85], // Snap points fijos
       builder: (BuildContext context, ScrollController scrollController) {
         return Container(
           decoration: BoxDecoration(

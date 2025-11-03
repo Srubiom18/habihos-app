@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/ui_constants.dart';
 import '../../services/common/snackbar_service.dart';
-import '../../services/cleaning_rotation_service.dart';
 import '../../models/api_models.dart';
 import 'controllers/zonas_comunes_controller.dart';
 import 'widgets/zonas_comunes_widgets.dart';
@@ -142,6 +141,7 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
           zonaComun: null, // Usar datos del calendario
           calendarZone: zone,
           assignedUsers: zone.assignedUsers,
+          excludeUsers: zone.excludeUsers, // ✅ NUEVO: Usuarios excluidos
           isCurrent: zone.isCurrent,
           index: index,
           isLastItem: isLastItem,
@@ -196,6 +196,7 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
         return _buildZonaCard(
           zonaComun: zonaComun,
           assignedUsers: [], // Sin usuarios asignados
+          excludeUsers: [], // ✅ NUEVO: Sin usuarios excluidos
           isCurrent: false,
           index: index,
           isLastItem: isLastItem,
@@ -211,6 +212,7 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
     CleaningAreaResponse? zonaComun,
     CleaningZoneRotationResponse? calendarZone,
     List<AssignedUserInfo> assignedUsers = const [],
+    List<AssignedUserInfo> excludeUsers = const [], // ✅ NUEVO: Usuarios excluidos
     required bool isCurrent,
     required int index,
     required bool isLastItem,
@@ -232,6 +234,7 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
         zonaComun: zonaComun,
         calendarZone: calendarZone,
         assignedUsers: assignedUsers,
+        excludeUsers: excludeUsers, // ✅ NUEVO: Usuarios excluidos
         isCurrent: isCurrent,
         controller: _controller,
         onEdit: onEdit,
@@ -393,26 +396,13 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Rotación Automática',
-                    style: TextStyle(
-                      fontSize: UIConstants.textSizeLarge,
-                      fontWeight: FontWeight.w600,
-                      color: UIConstants.textColor,
-                    ),
-                  ),
-                  const SizedBox(height: UIConstants.spacingSmall),
-                  Text(
-                    _controller.rotationConfig?.frequencyDescription ?? 'Sin configuración',
-                    style: TextStyle(
-                      fontSize: UIConstants.textSizeSmall,
-                      color: UIConstants.textColor.withOpacity(0.6),
-                    ),
-                  ),
-                ],
+              Text(
+                'Rotación Automática',
+                style: TextStyle(
+                  fontSize: UIConstants.textSizeLarge,
+                  fontWeight: FontWeight.w600,
+                  color: UIConstants.textColor,
+                ),
               ),
               Switch(
                 value: _controller.isRotationActive,
@@ -436,21 +426,21 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
             ],
           ),
           
-          // Información de estado de rotación (siempre visible)
-          const SizedBox(height: UIConstants.spacingLarge),
-          _buildRotationInfo(),
-          
+          // Información de estado de rotación (solo visible si está activada)
+          if (_controller.isRotationActive) ...[
+            const SizedBox(height: UIConstants.spacingLarge),
+            _buildRotationInfo(),
+            
             // Sección de configuración (solo visible si está activada)
-            if (_controller.isRotationActive) ...[
-              const SizedBox(height: UIConstants.spacingLarge),
+            const SizedBox(height: UIConstants.spacingLarge),
 
-              // Nuevos controles de rotación con milisegundos
-              _buildRotationIntervalControls(),
+            // Nuevos controles de rotación con milisegundos
+            _buildRotationIntervalControls(),
 
-              // Botones de acción adicionales
-              const SizedBox(height: UIConstants.spacingLarge),
-              _buildRotationActions(),
-            ],
+            // Botones de acción adicionales
+            const SizedBox(height: UIConstants.spacingLarge),
+            _buildRotationActions(),
+          ],
         ],
       ),
     );
@@ -503,18 +493,6 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
           
           // Fechas de rotación (mostrar nextRotationDate del calendario)
           if (_controller.calendarData?.nextRotationDate != null) ..._buildRotationDates(),
-          
-          // Mensaje si no está activa
-          if (!_controller.isRotationActive) ...[
-            Text(
-              'La rotación está desactivada',
-              style: TextStyle(
-                fontSize: UIConstants.textSizeSmall,
-                color: UIConstants.textColor.withOpacity(0.6),
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import '../config/app_config.dart';
 import '../models/shopping_list_response.dart';
+import '../models/shopping_distribution.dart';
 import '../models/add_product_request.dart';
 import 'http_interceptor_service.dart';
 
@@ -92,6 +93,95 @@ class ShoppingListService {
       } else if (response.statusCode == 400) {
         final Map<String, dynamic> errorData = jsonDecode(response.body);
         throw Exception(errorData['message'] ?? 'Error en los datos enviados');
+      } else {
+        throw Exception('Error del servidor: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e.toString().contains('TimeoutException')) {
+        throw Exception('Tiempo de espera agotado. Verifica tu conexión.');
+      } else if (e.toString().contains('SocketException')) {
+        throw Exception('No se puede conectar al servidor. Verifica que la API esté ejecutándose.');
+      } else {
+        rethrow;
+      }
+    }
+  }
+
+  /// Calcula la distribución de gastos
+  static Future<ShoppingDistribution> calculateDistribution() async {
+    try {
+      final url = '${AppConfig.baseUrl}${AppConfig.apiVersion}$_baseEndpoint/calculate-distribution';
+      
+      final response = await HttpInterceptorService.post(url).timeout(
+        const Duration(milliseconds: AppConfig.connectionTimeout),
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        return ShoppingDistribution.fromJson(json);
+      } else if (response.statusCode == 401) {
+        throw Exception('Token de autenticación inválido');
+      } else if (response.statusCode == 400) {
+        final Map<String, dynamic> errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Error al calcular distribución');
+      } else {
+        throw Exception('Error del servidor: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e.toString().contains('TimeoutException')) {
+        throw Exception('Tiempo de espera agotado. Verifica tu conexión.');
+      } else if (e.toString().contains('SocketException')) {
+        throw Exception('No se puede conectar al servidor. Verifica que la API esté ejecutándose.');
+      } else {
+        rethrow;
+      }
+    }
+  }
+
+  /// Confirma el pago del usuario actual
+  static Future<void> confirmPayment() async {
+    try {
+      final url = '${AppConfig.baseUrl}${AppConfig.apiVersion}$_baseEndpoint/confirm-payment';
+      
+      final response = await HttpInterceptorService.post(url).timeout(
+        const Duration(milliseconds: AppConfig.connectionTimeout),
+      );
+
+      if (response.statusCode == 200) {
+        return; // Éxito
+      } else if (response.statusCode == 401) {
+        throw Exception('Token de autenticación inválido');
+      } else if (response.statusCode == 400) {
+        final Map<String, dynamic> errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Error al confirmar pago');
+      } else {
+        throw Exception('Error del servidor: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e.toString().contains('TimeoutException')) {
+        throw Exception('Tiempo de espera agotado. Verifica tu conexión.');
+      } else if (e.toString().contains('SocketException')) {
+        throw Exception('No se puede conectar al servidor. Verifica que la API esté ejecutándose.');
+      } else {
+        rethrow;
+      }
+    }
+  }
+
+  /// Obtiene el historial de compras
+  static Future<List<ShoppingDistribution>> getShoppingHistory() async {
+    try {
+      final url = '${AppConfig.baseUrl}${AppConfig.apiVersion}$_baseEndpoint/history';
+      
+      final response = await HttpInterceptorService.get(url).timeout(
+        const Duration(milliseconds: AppConfig.connectionTimeout),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(response.body) as List<dynamic>;
+        return jsonList.map((json) => ShoppingDistribution.fromJson(json as Map<String, dynamic>)).toList();
+      } else if (response.statusCode == 401) {
+        throw Exception('Token de autenticación inválido');
       } else {
         throw Exception('Error del servidor: ${response.statusCode}');
       }

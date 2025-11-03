@@ -105,6 +105,7 @@ class ZonaComunCard extends StatelessWidget {
   final CleaningAreaResponse? zonaComun;
   final CleaningZoneRotationResponse? calendarZone;
   final List<AssignedUserInfo> assignedUsers;
+  final List<AssignedUserInfo> excludeUsers; // ✅ NUEVO: Usuarios excluidos
   final bool isCurrent;
   final ZonasComunesController controller;
   final VoidCallback onEdit;
@@ -115,6 +116,7 @@ class ZonaComunCard extends StatelessWidget {
     this.zonaComun,
     this.calendarZone,
     this.assignedUsers = const [],
+    this.excludeUsers = const [], // ✅ NUEVO: Usuarios excluidos
     this.isCurrent = false,
     required this.controller,
     required this.onEdit,
@@ -255,159 +257,238 @@ class ZonaComunCard extends StatelessWidget {
             
             const SizedBox(height: UIConstants.spacingMedium),
             
-            // Avatares compactos de usuarios asignados
-            _buildCompactUserAvatars(),
+            // ✅ NUEVO: Avatares de usuarios asignados y excluidos lado a lado
+            _buildUserAvatarsSection(),
             
-            const SizedBox(height: UIConstants.spacingSmall),
+            const SizedBox(height: UIConstants.spacingLarge),
             
-            // Descripción con degradado condicional
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final textSpan = TextSpan(
-                  text: description.isNotEmpty ? description : 'Sin descripción',
-                  style: TextStyle(
-                    fontSize: UIConstants.textSizeSmall,
-                    color: UIConstants.textColor.withOpacity(0.6),
-                  ),
-                );
-                final textPainter = TextPainter(
-                  text: textSpan,
-                  maxLines: 1,
-                  textDirection: TextDirection.ltr,
-                );
-                textPainter.layout(maxWidth: double.infinity);
-                
-                // Verificar si el texto es más ancho que el contenedor
-                final needsGradient = textPainter.width > constraints.maxWidth;
-                
-                return SizedBox(
-                  height: 20,
-                  child: Stack(
-                    children: [
-                      // Texto de descripción
-                      Text(
-                        description.isNotEmpty ? description : 'Sin descripción',
-                        style: TextStyle(
-                          fontSize: UIConstants.textSizeSmall,
-                          color: UIConstants.textColor.withOpacity(0.6),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.clip,
-                      ),
-                      // Degradado solo si el texto es largo
-                      if (needsGradient)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          bottom: 0,
-                          child: Container(
-                            width: 40,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                                colors: [
-                                  Colors.white.withOpacity(0.0),
-                                  Colors.white,
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-              },
-            ),
+            // ✅ NUEVO: Sección separada para la descripción
+            _buildDescriptionSection(description),
           ],
         ),
       ),
     );
   }
 
-  /// Construye los avatares compactos de usuarios asignados
-  Widget _buildCompactUserAvatars() {
-    // Si hay usuarios asignados, mostrar sus avatares
-    if (assignedUsers.isNotEmpty) {
-      final avatarWidgets = <Widget>[];
-      
-      // Agregar avatares de usuarios (máximo 5)
-      for (var user in assignedUsers.take(5)) {
-        avatarWidgets.add(
-          Tooltip(
-            message: user.memberName,
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: UIConstants.primaryColor,
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  user.userInitials,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+  /// ✅ NUEVO: Construye la sección de avatares con usuarios asignados y excluidos
+  Widget _buildUserAvatarsSection() {
+    return Row(
+      children: [
+        // Usuarios asignados (lado izquierdo) - con margen
+        Expanded(
+          child: _buildAssignedUsersAvatars(),
+        ),
+        
+        // Margen antes de la línea divisoria
+        const SizedBox(width: UIConstants.spacingMedium),
+        
+        // Separador siempre visible
+        Container(
+          width: 1,
+          height: 60, // Altura fija para mantener consistencia
+          color: Colors.grey[300],
+        ),
+        
+        // Margen después de la línea divisoria
+        const SizedBox(width: UIConstants.spacingMedium),
+        
+        // Usuarios excluidos (lado derecho) - siempre visible
+        Expanded(
+          child: _buildExcludedUsersAvatars(),
+        ),
+      ],
+    );
+  }
+
+  /// Construye los avatares de usuarios asignados
+  Widget _buildAssignedUsersAvatars() {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: UIConstants.primaryColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: UIConstants.primaryColor.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Título
+          Text(
+            'Asignados',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: UIConstants.primaryColor.withOpacity(0.7),
             ),
           ),
-        );
-      }
-      
-      // Agregar indicador de más usuarios si hay más de 5
-      if (assignedUsers.length > 5) {
-        avatarWidgets.add(
-          Container(
-            width: 32,
-            height: 32,
+          const SizedBox(height: 4),
+          
+          // Avatares
+          assignedUsers.isNotEmpty
+              ? _buildAvatarRow(assignedUsers, UIConstants.primaryColor, false)
+              : _buildEmptyAvatar(),
+        ],
+      ),
+    );
+  }
+
+  /// Construye los avatares de usuarios excluidos
+  Widget _buildExcludedUsersAvatars() {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Colors.red.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end, // Alineado a la derecha
+        children: [
+          // Título
+          Text(
+            'Excluidos',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Colors.red.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 4),
+          
+          // Avatares
+          excludeUsers.isNotEmpty
+              ? _buildAvatarRow(excludeUsers, Colors.red, true)
+              : _buildExampleExcludedAvatar(), // Avatar de ejemplo
+        ],
+      ),
+    );
+  }
+
+  /// Construye una fila de avatares
+  Widget _buildAvatarRow(List<AssignedUserInfo> users, Color color, bool isExcluded) {
+    final avatarWidgets = <Widget>[];
+    
+    // Agregar avatares de usuarios (máximo 3 para excluidos, 5 para asignados)
+    final maxUsers = isExcluded ? 3 : 5;
+    for (var user in users.take(maxUsers)) {
+      avatarWidgets.add(
+        Tooltip(
+          message: user.memberName,
+          child: Container(
+            width: 28,
+            height: 28,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.grey[300],
+              color: color,
               border: Border.all(
                 color: Colors.white,
                 width: 2,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
-                '+${assignedUsers.length - 5}',
-                style: TextStyle(
-                  color: Colors.grey[700],
+                user.userInitials,
+                style: const TextStyle(
+                  color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
-        );
-      }
-      
-      return Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        children: avatarWidgets,
+        ),
       );
     }
     
-    // Si no hay usuarios asignados, mostrar un avatar vacío gris
+    // Agregar indicador de más usuarios si hay más del máximo
+    if (users.length > maxUsers) {
+      avatarWidgets.add(
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.grey[300],
+            border: Border.all(
+              color: Colors.white,
+              width: 2,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              '+${users.length - maxUsers}',
+              style: TextStyle(
+                color: Colors.grey[700],
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    // Alinear los avatares según el tipo
+    if (isExcluded) {
+      return Align(
+        alignment: Alignment.centerRight, // Alineado a la derecha
+        child: Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          children: avatarWidgets,
+        ),
+      );
+    }
+    
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: avatarWidgets,
+    );
+  }
+
+  /// Construye un avatar de ejemplo para usuarios excluidos
+  Widget _buildExampleExcludedAvatar() {
+    return Align(
+      alignment: Alignment.centerRight, // Alineado a la derecha
+      child: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.grey[400],
+          border: Border.all(
+            color: Colors.white,
+            width: 2,
+          ),
+        ),
+        child: Icon(
+          Icons.person_off_outlined,
+          size: 14,
+          color: Colors.grey[600],
+        ),
+      ),
+    );
+  }
+
+  /// Construye un avatar vacío cuando no hay usuarios
+  Widget _buildEmptyAvatar() {
     return Container(
-      width: 32,
-      height: 32,
+      width: 28,
+      height: 28,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.grey[300],
@@ -418,8 +499,51 @@ class ZonaComunCard extends StatelessWidget {
       ),
       child: Icon(
         Icons.person_outline,
-        size: 16,
+        size: 14,
         color: Colors.grey[600],
+      ),
+    );
+  }
+
+  /// ✅ NUEVO: Construye la sección de descripción con su propio espacio
+  Widget _buildDescriptionSection(String description) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: UIConstants.spacingMedium,
+        vertical: UIConstants.spacingSmall,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          // Icono de descripción
+          Icon(
+            Icons.description_outlined,
+            size: 16,
+            color: UIConstants.textColor.withOpacity(0.5),
+          ),
+          const SizedBox(width: UIConstants.spacingSmall),
+          
+          // Texto de descripción
+          Expanded(
+            child: Text(
+              description.isNotEmpty ? description : 'Sin descripción',
+              style: TextStyle(
+                fontSize: UIConstants.textSizeSmall,
+                color: UIConstants.textColor.withOpacity(0.7),
+                height: 1.3,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/ui_constants.dart';
-import 'auth_type_selector_widget.dart';
+import 'auth_types.dart';
 
 /// Widget que muestra el botón de envío de autenticación
 class AuthSubmitButtonWidget extends StatelessWidget {
@@ -25,7 +25,7 @@ class AuthSubmitButtonWidget extends StatelessWidget {
         onPressed: isLoading || !isEnabled ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: _getAuthTypeColor(),
-          foregroundColor: Colors.white,
+          foregroundColor: Colors.black87,
           padding: const EdgeInsets.symmetric(vertical: UIConstants.spacingLarge),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius + 2),
@@ -38,7 +38,7 @@ class AuthSubmitButtonWidget extends StatelessWidget {
                 width: UIConstants.iconSizeMedium,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black87),
                 ),
               )
             : Text(
@@ -56,11 +56,11 @@ class AuthSubmitButtonWidget extends StatelessWidget {
   Color _getAuthTypeColor() {
     switch (selectedAuthType) {
       case AuthType.login:
-        return Colors.blue[600]!;
+        return Colors.blue[100]!;
       case AuthType.register:
-        return Colors.green[600]!;
+        return Colors.green[100]!;
       case AuthType.guest:
-        return Colors.orange[600]!;
+        return Colors.orange[100]!;
     }
   }
 
