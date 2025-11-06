@@ -23,14 +23,18 @@ class CalendarInfoWidget extends StatelessWidget {
       margin: const EdgeInsets.all(UIConstants.screenPadding),
       padding: const EdgeInsets.all(UIConstants.spacingLarge),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.withOpacity(0.15),
         borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            spreadRadius: 0,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -42,14 +46,16 @@ class CalendarInfoWidget extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [UIConstants.primaryColor, UIConstants.primaryColor.withOpacity(0.7)],
-                  ),
+                  color: Colors.grey.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
+                  border: Border.all(
+                    color: Colors.grey.withOpacity(0.5),
+                    width: 3,
+                  ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.cleaning_services_rounded,
-                  color: Colors.white,
+                  color: Colors.grey[700],
                   size: 24,
                 ),
               ),
@@ -83,14 +89,18 @@ class CalendarInfoWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(UIConstants.spacingMedium),
             decoration: BoxDecoration(
-              color: UIConstants.primaryColor.withOpacity(0.1),
+              color: Colors.grey.withOpacity(0.1),
               borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
+              border: Border.all(
+                color: Colors.grey.withOpacity(0.3),
+                width: 1,
+              ),
             ),
             child: Text(
               'Una vez que crees una zona común, podrás asignar usuarios específicos a cada zona para organizar las tareas de limpieza.',
               style: TextStyle(
                 fontSize: UIConstants.textSizeSmall,
-                color: UIConstants.primaryColor,
+                color: Colors.grey[700],
               ),
             ),
           ),
@@ -125,147 +135,152 @@ class ZonaComunCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
+        border: Border.all(
+          // Si es actual, usar borde azul; si no, usar borde gris
+          color: isCurrent ? UIConstants.primaryColor : Colors.grey.withOpacity(0.5),
+          width: isCurrent ? 2 : 3,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: _buildCardContent(),
+    );
+  }
+
+  /// Construye el contenido interno de la card
+  Widget _buildCardContent() {
     final isUsingCalendar = calendarZone != null;
     final name = isUsingCalendar ? calendarZone!.cleaningAreaName : zonaComun!.name;
     final description = isUsingCalendar ? calendarZone!.cleaningAreaDescription : zonaComun!.description;
     final color = isUsingCalendar ? calendarZone!.cleaningAreaColor : zonaComun!.color;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            spreadRadius: 0,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        // Destacar si es la zona actual
-        border: isCurrent ? Border.all(
-          color: UIConstants.primaryColor,
-          width: 2,
-        ) : null,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(UIConstants.spacingLarge),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header con icono, nombre y botones
-            Row(
-              children: [
-                // Icono de la zona
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: controller.parseColor(color).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
-                    border: Border.all(
-                      color: controller.parseColor(color).withOpacity(0.3),
-                      width: 2,
-                    ),
-                  ),
-                  child: Icon(
-                    controller.getZonaIcon(name),
-                    color: controller.parseColor(color),
-                    size: 24,
+    return Padding(
+      padding: const EdgeInsets.all(UIConstants.spacingLarge),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header con icono, nombre y botones
+          Row(
+            children: [
+              // Icono de la zona
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: controller.parseColor(color).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
+                  border: Border.all(
+                    color: controller.parseColor(color).withOpacity(0.3),
+                    width: 2,
                   ),
                 ),
-                
-                const SizedBox(width: UIConstants.spacingLarge),
-                
-                // Nombre de la zona
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: UIConstants.textSizeMedium,
-                          fontWeight: FontWeight.w600,
-                          color: UIConstants.textColor,
-                        ),
-                      ),
-                      if (isCurrent)
-                        Container(
-                          margin: const EdgeInsets.only(top: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: UIConstants.primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Text(
-                            'ACTUAL',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: UIConstants.primaryColor,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                child: Icon(
+                  controller.getZonaIcon(name),
+                  color: controller.parseColor(color),
+                  size: 24,
                 ),
-                
-                // Botones de acción
-                Row(
+              ),
+              
+              const SizedBox(width: UIConstants.spacingLarge),
+              
+              // Nombre de la zona
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Botón de editar
-                    Container(
-                      decoration: BoxDecoration(
-                        color: UIConstants.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.edit_outlined,
-                          color: UIConstants.primaryColor,
-                          size: 20,
-                        ),
-                        onPressed: onEdit,
-                        tooltip: 'Editar zona',
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: UIConstants.textSizeMedium,
+                        fontWeight: FontWeight.w600,
+                        color: UIConstants.textColor,
                       ),
                     ),
-                    
-                    const SizedBox(width: UIConstants.spacingSmall),
-                    
-                    // Botón de eliminar
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.delete_outline,
-                          color: Colors.red,
-                          size: 20,
+                    if (isCurrent)
+                      Container(
+                        margin: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: UIConstants.primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        onPressed: onDelete,
-                        tooltip: 'Eliminar zona',
+                        child: const Text(
+                          'ACTUAL',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: UIConstants.primaryColor,
+                          ),
+                        ),
                       ),
-                    ),
                   ],
                 ),
-              ],
-            ),
-            
-            const SizedBox(height: UIConstants.spacingMedium),
-            
-            // ✅ NUEVO: Avatares de usuarios asignados y excluidos lado a lado
-            _buildUserAvatarsSection(),
-            
-            const SizedBox(height: UIConstants.spacingLarge),
-            
-            // ✅ NUEVO: Sección separada para la descripción
-            _buildDescriptionSection(description),
-          ],
-        ),
+              ),
+              
+              // Botones de acción
+              Row(
+                children: [
+                  // Botón de editar (mantener azul)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: UIConstants.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        color: UIConstants.primaryColor,
+                        size: 20,
+                      ),
+                      onPressed: onEdit,
+                      tooltip: 'Editar zona',
+                    ),
+                  ),
+                  
+                  const SizedBox(width: UIConstants.spacingSmall),
+                  
+                  // Botón de eliminar (mantener rojo)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.delete_outline,
+                        color: Colors.red,
+                        size: 20,
+                      ),
+                      onPressed: onDelete,
+                      tooltip: 'Eliminar zona',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: UIConstants.spacingMedium),
+          
+          // ✅ NUEVO: Avatares de usuarios asignados y excluidos lado a lado
+          _buildUserAvatarsSection(),
+          
+          const SizedBox(height: UIConstants.spacingLarge),
+          
+          // ✅ NUEVO: Sección separada para la descripción
+          _buildDescriptionSection(description),
+        ],
       ),
     );
   }

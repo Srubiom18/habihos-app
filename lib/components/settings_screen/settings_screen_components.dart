@@ -5,9 +5,6 @@
 
 // Pantallas de configuración
 export 'participants_config_screen.dart';
-export 'subscription_config_screen.dart';
-export 'color_scheme_config_screen.dart';
-export 'avatar_config_screen.dart';
 export 'zonas_comunes_config_screen.dart';
 
 // Controladores

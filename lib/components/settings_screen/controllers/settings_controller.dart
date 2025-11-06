@@ -22,33 +22,6 @@ class SettingsController {
     );
   }
 
-  /// Navega a la configuración de suscripción
-  void navigateToSubscriptionConfig(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const SubscriptionConfigScreen(),
-      ),
-    );
-  }
-
-  /// Navega a la configuración de esquema de colores
-  void navigateToColorSchemeConfig(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const ColorSchemeConfigScreen(),
-      ),
-    );
-  }
-
-  /// Navega a la configuración de avatar
-  void navigateToAvatarConfig(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const AvatarConfigScreen(),
-      ),
-    );
-  }
-
   /// Muestra el diálogo "Acerca de"
   void showAboutDialog(BuildContext context) {
     showDialog(

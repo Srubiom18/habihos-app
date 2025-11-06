@@ -249,20 +249,20 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
       width: MediaQuery.of(context).size.width - (UIConstants.screenPadding * 2),
       padding: const EdgeInsets.all(UIConstants.spacingLarge),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.withOpacity(0.15),
         borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            spreadRadius: 0,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
-        border: Border.all(
-          color: UIConstants.primaryColor.withOpacity(0.15),
-          width: 1,
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,6 +362,12 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
   Future<void> _deleteCleaningArea(CleaningAreaResponse zonaComun) async {
     try {
       await _controller.deleteCleaningArea(zonaComun.id.toString());
+      if (mounted) {
+        SnackBarService().showSuccess(
+          context,
+          'Zona eliminada exitosamente',
+        );
+      }
     } catch (e) {
       if (mounted) {
         SnackBarService().showError(
@@ -378,14 +384,18 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
       margin: const EdgeInsets.symmetric(horizontal: UIConstants.screenPadding),
       padding: const EdgeInsets.all(UIConstants.spacingLarge),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.withOpacity(0.15),
         borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            spreadRadius: 0,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -451,10 +461,10 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
     return Container(
       padding: const EdgeInsets.all(UIConstants.spacingMedium),
       decoration: BoxDecoration(
-        color: UIConstants.primaryColor.withOpacity(0.05),
+        color: Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
         border: Border.all(
-          color: UIConstants.primaryColor.withOpacity(0.2),
+          color: Colors.grey.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -467,7 +477,7 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
               Icon(
                 Icons.info_outline,
                 size: 16,
-                color: UIConstants.primaryColor,
+                color: Colors.grey[700],
               ),
               const SizedBox(width: UIConstants.spacingSmall),
               Text(
@@ -475,7 +485,7 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
                 style: TextStyle(
                   fontSize: UIConstants.textSizeSmall,
                   fontWeight: FontWeight.w600,
-                  color: UIConstants.primaryColor,
+                  color: Colors.grey[700],
                 ),
               ),
             ],
@@ -487,7 +497,7 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
           if (_controller.isRotationActive) ...[
             _buildCountdownSection(),
             const SizedBox(height: UIConstants.spacingMedium),
-            Divider(color: UIConstants.primaryColor.withOpacity(0.2)),
+            Divider(color: Colors.grey.withOpacity(0.3)),
             const SizedBox(height: UIConstants.spacingMedium),
           ],
           
@@ -749,9 +759,12 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
     return Container(
       padding: const EdgeInsets.all(UIConstants.spacingMedium),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Colors.grey.withOpacity(0.15),
         borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -815,13 +828,13 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
         padding: const EdgeInsets.all(UIConstants.spacingMedium),
         decoration: BoxDecoration(
           color: isActive 
-              ? UIConstants.primaryColor.withOpacity(0.2) 
-              : UIConstants.primaryColor.withOpacity(0.05),
+              ? Colors.grey.withOpacity(0.2) 
+              : Colors.grey.withOpacity(0.1),
           borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
           border: Border.all(
             color: isActive 
-                ? UIConstants.primaryColor 
-                : UIConstants.primaryColor.withOpacity(0.3),
+                ? Colors.grey.withOpacity(0.7)
+                : Colors.grey.withOpacity(0.3),
             width: isActive ? 2.5 : 1.5,
           ),
         ),
@@ -832,8 +845,8 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
               icon,
               size: 32,
               color: isActive 
-                  ? UIConstants.primaryColor 
-                  : UIConstants.primaryColor.withOpacity(0.7),
+                  ? Colors.grey[700]
+                  : Colors.grey[600],
             ),
             const SizedBox(height: UIConstants.spacingSmall),
             Text(
@@ -842,8 +855,8 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
                 fontSize: UIConstants.textSizeMedium,
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                 color: isActive 
-                    ? UIConstants.primaryColor 
-                    : UIConstants.primaryColor.withOpacity(0.7),
+                    ? Colors.grey[700]
+                    : Colors.grey[600],
               ),
               textAlign: TextAlign.center,
             ),
@@ -853,7 +866,7 @@ class _ZonasComunesConfigScreenState extends State<ZonasComunesConfigScreen> {
               Icon(
                 Icons.check_circle,
                 size: 16,
-                color: UIConstants.primaryColor,
+                color: Colors.grey[700],
               ),
             ],
           ],

@@ -172,8 +172,32 @@ class ZonasComunesController extends ChangeNotifier {
       // Notificar a la home screen que se eliminó una zona
       ZonesUpdateNotifierService().notifyZonesChanged();
       
-      // Recargar la lista
-      await loadCleaningAreas();
+      // Eliminar de la lista local en lugar de recargar todo
+      _zonasComunes.removeWhere((zona) => zona.id == id);
+      
+      // También actualizar el calendario si contiene información de esta zona
+      if (_calendarData != null) {
+        final filteredZones = _calendarData!.zoneRotation
+            .where((zone) => zone.cleaningAreaId != id)
+            .toList();
+        
+        // Crear una nueva instancia del calendario con las zonas filtradas
+        _calendarData = CleaningCalendarResponse(
+          rotationId: _calendarData!.rotationId,
+          frequency: _calendarData!.frequency,
+          rotationDays: _calendarData!.rotationDays,
+          startDate: _calendarData!.startDate,
+          nextRotationDate: _calendarData!.nextRotationDate,
+          timeUntilNextRotationMs: _calendarData!.timeUntilNextRotationMs,
+          isActive: _calendarData!.isActive,
+          hasConfiguredZones: _calendarData!.hasConfiguredZones,
+          zoneRotation: filteredZones,
+          message: _calendarData!.message,
+        );
+      }
+      
+      // Notificar a los listeners para actualizar la UI
+      notifyListeners();
     } catch (e) {
       rethrow; // Re-lanzar para que la UI pueda manejar el error
     }
@@ -574,7 +598,7 @@ class ZonasComunesController extends ChangeNotifier {
   /// Crea una exclusión de rotación para un usuario en una zona específica
   Future<void> createRotationExclusion(String memberId, String cleaningAreaId, {String? reason}) async {
     try {
-      await CleaningRotationExclusionService.createExclusion(
+      final exclusionResponse = await CleaningRotationExclusionService.createExclusion(
         memberId,
         cleaningAreaId,
         reason: reason,
@@ -583,8 +607,121 @@ class ZonasComunesController extends ChangeNotifier {
       // Notificar que se creó una exclusión
       ZonesUpdateNotifierService().notifyZonesChanged();
       
-      // Recargar el calendario para obtener los datos actualizados
-      await loadCleaningCalendar();
+      // Actualizar localmente el calendario en lugar de recargar todo
+      if (_calendarData != null) {
+        // Buscar la zona correspondiente
+        final existingZoneIndex = _calendarData!.zoneRotation.indexWhere(
+          (zone) => zone.cleaningAreaId == cleaningAreaId
+        );
+        
+        // Crear un nuevo AssignedUserInfo con la información de la exclusión
+        // El fromMap ya garantiza que todos los campos String no sean null
+        final excludedUser = AssignedUserInfo(
+          memberId: exclusionResponse.memberId,
+          memberName: exclusionResponse.memberName,
+          memberEmail: exclusionResponse.memberEmail,
+          userInitials: _generateInitials(exclusionResponse.memberName),
+          hasRegisteredAccount: false, // Valor por defecto, no crítico para mostrar
+          assignmentId: null,
+          exclusionId: exclusionResponse.id,
+        );
+        
+        List<CleaningZoneRotationResponse> updatedZones;
+        
+        if (existingZoneIndex >= 0) {
+          // La zona existe, actualizar la lista de usuarios excluidos
+          final existingZone = _calendarData!.zoneRotation[existingZoneIndex];
+          
+          // Verificar que el usuario no esté ya excluido
+          final alreadyExcluded = existingZone.excludeUsers.any(
+            (user) => user.memberId == memberId || user.exclusionId == exclusionResponse.id
+          );
+          
+          if (!alreadyExcluded) {
+            // Crear nueva lista de usuarios excluidos con el nuevo usuario
+            final updatedExcludedUsers = List<AssignedUserInfo>.from(existingZone.excludeUsers)..add(excludedUser);
+            
+            // Crear nueva instancia de la zona con los usuarios excluidos actualizados
+            final updatedZone = CleaningZoneRotationResponse(
+              assignmentId: existingZone.assignmentId,
+              cleaningAreaId: existingZone.cleaningAreaId,
+              cleaningAreaName: existingZone.cleaningAreaName,
+              cleaningAreaDescription: existingZone.cleaningAreaDescription,
+              cleaningAreaColor: existingZone.cleaningAreaColor,
+              status: existingZone.status,
+              periodStart: existingZone.periodStart,
+              periodEnd: existingZone.periodEnd,
+              completedAt: existingZone.completedAt,
+              notes: existingZone.notes,
+              isCurrent: existingZone.isCurrent,
+              isOverdue: existingZone.isOverdue,
+              positionInRotation: existingZone.positionInRotation,
+              assignedUsers: existingZone.assignedUsers,
+              excludeUsers: updatedExcludedUsers,
+            );
+            
+            // Reemplazar la zona en la lista
+            updatedZones = List<CleaningZoneRotationResponse>.from(_calendarData!.zoneRotation);
+            updatedZones[existingZoneIndex] = updatedZone;
+          } else {
+            // Ya está excluido, no hacer nada
+            updatedZones = _calendarData!.zoneRotation;
+          }
+        } else {
+          // La zona no existe en zoneRotation, crear una nueva entrada
+          // Buscar información de la zona en zonas comunes
+          final zonaComun = _zonasComunes.firstWhere(
+            (zona) => zona.id == cleaningAreaId,
+            orElse: () => CleaningAreaResponse(
+              id: cleaningAreaId,
+              name: exclusionResponse.cleaningAreaName,
+              description: exclusionResponse.cleaningAreaDescription,
+              color: exclusionResponse.cleaningAreaColor,
+              houseId: '',
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            ),
+          );
+          
+          // Crear nueva zona con el usuario excluido
+          final newZone = CleaningZoneRotationResponse(
+            assignmentId: null,
+            cleaningAreaId: cleaningAreaId,
+            cleaningAreaName: zonaComun.name,
+            cleaningAreaDescription: zonaComun.description,
+            cleaningAreaColor: zonaComun.color,
+            status: null,
+            periodStart: null,
+            periodEnd: null,
+            completedAt: null,
+            notes: null,
+            isCurrent: false,
+            isOverdue: false,
+            positionInRotation: 0,
+            assignedUsers: [],
+            excludeUsers: [excludedUser],
+          );
+          
+          // Añadir la nueva zona a la lista
+          updatedZones = List<CleaningZoneRotationResponse>.from(_calendarData!.zoneRotation)..add(newZone);
+        }
+        
+        // Crear nueva instancia del calendario con las zonas actualizadas
+        _calendarData = CleaningCalendarResponse(
+          rotationId: _calendarData!.rotationId,
+          frequency: _calendarData!.frequency,
+          rotationDays: _calendarData!.rotationDays,
+          startDate: _calendarData!.startDate,
+          nextRotationDate: _calendarData!.nextRotationDate,
+          timeUntilNextRotationMs: _calendarData!.timeUntilNextRotationMs,
+          isActive: _calendarData!.isActive,
+          hasConfiguredZones: _calendarData!.hasConfiguredZones,
+          zoneRotation: updatedZones,
+          message: _calendarData!.message,
+        );
+        
+        notifyListeners();
+      }
     } catch (e) {
       rethrow; // Re-lanzar para que la UI pueda manejar el error
     }
@@ -598,11 +735,69 @@ class ZonasComunesController extends ChangeNotifier {
       // Notificar que se eliminó una exclusión
       ZonesUpdateNotifierService().notifyZonesChanged();
       
-      // Recargar el calendario para obtener los datos actualizados
-      await loadCleaningCalendar();
+      // Actualizar localmente el calendario en lugar de recargar todo
+      if (_calendarData != null) {
+        final updatedZones = _calendarData!.zoneRotation.map((zone) {
+          // Filtrar el usuario excluido por exclusionId
+          final updatedExcludedUsers = zone.excludeUsers
+              .where((user) => user.exclusionId != exclusionId)
+              .toList();
+          
+          // Solo actualizar si hubo cambios
+          if (updatedExcludedUsers.length != zone.excludeUsers.length) {
+            // Crear nueva instancia de la zona con los usuarios excluidos actualizados
+            return CleaningZoneRotationResponse(
+              assignmentId: zone.assignmentId,
+              cleaningAreaId: zone.cleaningAreaId,
+              cleaningAreaName: zone.cleaningAreaName,
+              cleaningAreaDescription: zone.cleaningAreaDescription,
+              cleaningAreaColor: zone.cleaningAreaColor,
+              status: zone.status,
+              periodStart: zone.periodStart,
+              periodEnd: zone.periodEnd,
+              completedAt: zone.completedAt,
+              notes: zone.notes,
+              isCurrent: zone.isCurrent,
+              isOverdue: zone.isOverdue,
+              positionInRotation: zone.positionInRotation,
+              assignedUsers: zone.assignedUsers,
+              excludeUsers: updatedExcludedUsers,
+            );
+          }
+          return zone;
+        }).toList();
+        
+        // Crear nueva instancia del calendario con las zonas actualizadas
+        _calendarData = CleaningCalendarResponse(
+          rotationId: _calendarData!.rotationId,
+          frequency: _calendarData!.frequency,
+          rotationDays: _calendarData!.rotationDays,
+          startDate: _calendarData!.startDate,
+          nextRotationDate: _calendarData!.nextRotationDate,
+          timeUntilNextRotationMs: _calendarData!.timeUntilNextRotationMs,
+          isActive: _calendarData!.isActive,
+          hasConfiguredZones: _calendarData!.hasConfiguredZones,
+          zoneRotation: updatedZones,
+          message: _calendarData!.message,
+        );
+        
+        notifyListeners();
+      }
     } catch (e) {
       rethrow; // Re-lanzar para que la UI pueda manejar el error
     }
+  }
+
+  /// Genera las iniciales del nombre para mostrar en avatares
+  String _generateInitials(String name) {
+    final words = name.trim().split(' ').where((w) => w.isNotEmpty).toList();
+    if (words.isEmpty) return '?';
+    
+    if (words.length == 1) {
+      return words[0].substring(0, words[0].length >= 1 ? 1 : words[0].length).toUpperCase();
+    }
+    
+    return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'.toUpperCase();
   }
 
   @override

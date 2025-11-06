@@ -817,22 +817,24 @@ class CleaningRotationExclusionResponse {
 
   factory CleaningRotationExclusionResponse.fromMap(Map<String, dynamic> map) {
     return CleaningRotationExclusionResponse(
-      id: map['id'] as String,
-      memberId: map['memberId'] as String,
-      memberName: map['memberName'] as String,
-      memberEmail: map['memberEmail'] as String,
-      cleaningAreaId: map['cleaningAreaId'] as String,
-      cleaningAreaName: map['cleaningAreaName'] as String,
-      cleaningAreaDescription: map['cleaningAreaDescription'] as String,
-      cleaningAreaColor: map['cleaningAreaColor'] as String,
+      id: map['id'] as String? ?? '',
+      memberId: map['memberId'] as String? ?? '',
+      memberName: map['memberName'] as String? ?? '',
+      memberEmail: map['memberEmail'] as String? ?? 'Sin cuenta registrada',
+      cleaningAreaId: map['cleaningAreaId'] as String? ?? '',
+      cleaningAreaName: map['cleaningAreaName'] as String? ?? '',
+      cleaningAreaDescription: map['cleaningAreaDescription'] as String? ?? '',
+      cleaningAreaColor: map['cleaningAreaColor'] as String? ?? '#2196F3',
       reason: map['reason'] as String?,
       expiresAt: map['expiresAt'] != null 
           ? DateTime.parse(map['expiresAt'] as String)
           : null,
-      isPermanent: map['isPermanent'] as bool,
-      isTemporary: map['isTemporary'] as bool,
-      isActive: map['isActive'] as bool,
-      createdAt: DateTime.parse(map['createdAt'] as String),
+      isPermanent: map['isPermanent'] as bool? ?? false,
+      isTemporary: map['isTemporary'] as bool? ?? false,
+      isActive: map['isActive'] as bool? ?? true,
+      createdAt: map['createdAt'] != null
+          ? DateTime.parse(map['createdAt'] as String)
+          : DateTime.now(),
     );
   }
 

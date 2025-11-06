@@ -56,35 +56,6 @@ class SettingsScreen extends StatelessWidget {
                     subtitle: 'Configurar calendario de limpieza',
                     onTap: () => controller.navigateToZonasComunesConfig(context),
                   ),
-                  SettingsItemData(
-                    icon: Icons.cancel_outlined,
-                    title: 'Cancelar Suscripción',
-                    subtitle: 'Finalizar suscripción de la casa',
-                    iconColor: Colors.red,
-                    textColor: Colors.red,
-                    onTap: () => controller.navigateToSubscriptionConfig(context),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: UIConstants.spacingLarge),
-              
-              // Sección: Personalización
-              SettingsSection(
-                title: 'Personalización',
-                items: [
-                  SettingsItemData(
-                    icon: Icons.palette_outlined,
-                    title: 'Esquema de Colores',
-                    subtitle: 'Cambiar tema y colores de la app',
-                    onTap: () => controller.navigateToColorSchemeConfig(context),
-                  ),
-                  SettingsItemData(
-                    icon: Icons.account_circle_outlined,
-                    title: 'Configurar Avatar',
-                    subtitle: 'Personalizar foto de perfil',
-                    onTap: () => controller.navigateToAvatarConfig(context),
-                  ),
                 ],
               ),
               
