@@ -43,14 +43,18 @@ class SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.withOpacity(0.15),
         borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            spreadRadius: 0,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -94,12 +98,16 @@ class SettingsItem extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: (iconColor ?? UIConstants.primaryColor).withOpacity(0.1),
+                color: Colors.grey.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.5),
+                  width: 2,
+                ),
               ),
               child: Icon(
                 icon,
-                color: iconColor ?? UIConstants.primaryColor,
+                color: Colors.grey[700],
                 size: 20,
               ),
             ),
@@ -154,7 +162,7 @@ class SettingsDivider extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: UIConstants.spacingLarge),
       child: Divider(
         height: 1,
-        color: UIConstants.textColor.withOpacity(0.1),
+        color: Colors.grey.withOpacity(0.3),
       ),
     );
   }

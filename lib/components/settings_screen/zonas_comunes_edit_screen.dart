@@ -137,7 +137,7 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
             color: UIConstants.textColor,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: UIConstants.textColor),
@@ -159,7 +159,7 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
               child: Text(
                 'Guardar',
                 style: TextStyle(
-                  color: _isLoading ? Colors.grey : UIConstants.primaryColor,
+                  color: _isLoading ? Colors.grey : Colors.grey[700],
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -236,58 +236,41 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            UIConstants.primaryColor.withOpacity(0.05),
-            UIConstants.primaryColor.withOpacity(0.02),
-          ],
-        ),
+        color: Colors.grey.withOpacity(0.15),
         border: Border.all(
-          color: UIConstants.primaryColor.withOpacity(0.1),
-          width: 1,
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
         ),
         boxShadow: [
           BoxShadow(
-            color: UIConstants.primaryColor.withOpacity(0.1),
-            spreadRadius: 0,
-            blurRadius: 20,
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
             offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header con efecto difuminado
+          // Header
           Container(
             padding: const EdgeInsets.all(UIConstants.spacingLarge),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(UIConstants.defaultBorderRadius),
-                topRight: Radius.circular(UIConstants.defaultBorderRadius),
-              ),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  UIConstants.primaryColor.withOpacity(0.1),
-                  UIConstants.primaryColor.withOpacity(0.05),
-                ],
-              ),
-            ),
             child: Row(
             children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: UIConstants.primaryColor.withOpacity(0.1),
+                    color: Colors.grey.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.grey.withOpacity(0.5),
+                      width: 2,
+                    ),
                   ),
                   child: Icon(
                     Icons.palette_rounded,
-                color: UIConstants.primaryColor,
+                color: Colors.grey[700],
                 size: 20,
               ),
                 ),
@@ -417,7 +400,7 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
                             ),
                           ],
                         ),
-                        backgroundColor: UIConstants.primaryColor,
+                        backgroundColor: Colors.grey[700],
                         duration: const Duration(seconds: 1),
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(
@@ -431,7 +414,7 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
                       color: Color(int.parse(color.replaceFirst('#', '0xFF'))),
                       borderRadius: BorderRadius.circular(25),
                       border: Border.all(
-                        color: isSelected ? UIConstants.primaryColor : Colors.white,
+                        color: isSelected ? Colors.grey.withOpacity(0.7) : Colors.grey.withOpacity(0.3),
                         width: isSelected ? 4 : 2,
                       ),
                       boxShadow: [
@@ -468,58 +451,41 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            UIConstants.primaryColor.withOpacity(0.1),
-            UIConstants.primaryColor.withOpacity(0.05),
-          ],
-        ),
+        color: Colors.grey.withOpacity(0.15),
         border: Border.all(
-          color: UIConstants.primaryColor.withOpacity(0.3),
-          width: 1,
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
         ),
         boxShadow: [
           BoxShadow(
-            color: UIConstants.primaryColor.withOpacity(0.2),
-            spreadRadius: 0,
-            blurRadius: 20,
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
             offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header con efecto difuminado
+          // Header con detalle azul
           Container(
             padding: const EdgeInsets.all(UIConstants.spacingLarge),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(UIConstants.defaultBorderRadius),
-                topRight: Radius.circular(UIConstants.defaultBorderRadius),
-              ),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  UIConstants.primaryColor.withOpacity(0.15),
-                  UIConstants.primaryColor.withOpacity(0.08),
-                ],
-              ),
-            ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: UIConstants.primaryColor.withOpacity(0.2),
+                    color: Colors.grey.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: UIConstants.primaryColor, // Detalle azul
+                      width: 2,
+                    ),
                   ),
                   child: Icon(
                     Icons.people_rounded,
-                    color: UIConstants.primaryColor,
+                    color: UIConstants.primaryColor, // Detalle azul
                     size: 20,
                   ),
                 ),
@@ -600,10 +566,14 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
                     icon: const Icon(Icons.person_add, size: 18),
                     label: const Text('Asignar Usuario'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: UIConstants.primaryColor,
-                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.grey.withOpacity(0.2),
+                      foregroundColor: Colors.grey[700],
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
+                        side: BorderSide(
+                          color: Colors.grey.withOpacity(0.5),
+                          width: 2,
+                        ),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: UIConstants.spacingMedium),
                     ),
@@ -622,58 +592,41 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(UIConstants.defaultBorderRadius),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.red.withOpacity(0.1),
-            Colors.red.withOpacity(0.05),
-          ],
-        ),
+        color: Colors.grey.withOpacity(0.15),
         border: Border.all(
-          color: Colors.red.withOpacity(0.3),
-          width: 1,
+          color: Colors.grey.withOpacity(0.5),
+          width: 3,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.red.withOpacity(0.2),
-            spreadRadius: 0,
-            blurRadius: 20,
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
             offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header con efecto difuminado
+          // Header con detalle rojo
           Container(
             padding: const EdgeInsets.all(UIConstants.spacingLarge),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(UIConstants.defaultBorderRadius),
-                topRight: Radius.circular(UIConstants.defaultBorderRadius),
-              ),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.red.withOpacity(0.15),
-                  Colors.red.withOpacity(0.08),
-                ],
-              ),
-            ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.2),
+                    color: Colors.grey.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.red, // Detalle rojo
+                      width: 2,
+                    ),
                   ),
                   child: Icon(
                     Icons.person_off_rounded,
-                    color: Colors.red,
+                    color: Colors.red, // Detalle rojo
                     size: 20,
                   ),
                 ),
@@ -754,10 +707,14 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
                     icon: const Icon(Icons.person_remove, size: 18),
                     label: const Text('Excluir Usuario'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.grey.withOpacity(0.2),
+                      foregroundColor: Colors.grey[700],
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
+                        side: BorderSide(
+                          color: Colors.grey.withOpacity(0.5),
+                          width: 2,
+                        ),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: UIConstants.spacingMedium),
                     ),
@@ -777,18 +734,18 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
       margin: const EdgeInsets.only(bottom: UIConstants.spacingSmall),
       padding: const EdgeInsets.all(UIConstants.spacingMedium),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.withOpacity(0.15),
         borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
         border: Border.all(
-          color: UIConstants.primaryColor.withOpacity(0.3),
-          width: 1,
+          color: Colors.grey.withOpacity(0.5),
+          width: 2,
         ),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundColor: UIConstants.primaryColor,
+            backgroundColor: Colors.grey[700],
             child: Text(
               user.userInitials,
               style: const TextStyle(
@@ -822,7 +779,7 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+            icon: Icon(Icons.remove_circle_outline, color: Colors.grey[700]),
             onPressed: () => _removeUser(user),
             tooltip: 'Desasignar usuario',
           ),
@@ -837,18 +794,18 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
       margin: const EdgeInsets.only(bottom: UIConstants.spacingSmall),
       padding: const EdgeInsets.all(UIConstants.spacingMedium),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.withOpacity(0.15),
         borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
         border: Border.all(
-          color: Colors.red.withOpacity(0.3),
-          width: 1,
+          color: Colors.grey.withOpacity(0.5),
+          width: 2,
         ),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.grey[700],
             child: Text(
               user.userInitials,
               style: const TextStyle(
@@ -882,7 +839,7 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+            icon: Icon(Icons.remove_circle_outline, color: Colors.grey[700]),
             onPressed: () => _removeExcludedUser(user),
             tooltip: 'Quitar exclusión',
           ),
@@ -931,11 +888,15 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
           child: ElevatedButton(
             onPressed: _isSaving ? null : _saveZone,
             style: ElevatedButton.styleFrom(
-              backgroundColor: UIConstants.primaryColor,
-              foregroundColor: Colors.white,
+              backgroundColor: Colors.grey.withOpacity(0.2),
+              foregroundColor: Colors.grey[700],
               padding: const EdgeInsets.symmetric(vertical: UIConstants.spacingMedium),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
+                side: BorderSide(
+                  color: Colors.grey.withOpacity(0.5),
+                  width: 2,
+                ),
               ),
             ),
             child: _isSaving
@@ -1037,10 +998,11 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
         onUserSelected: (memberId) async {
           try {
             await widget.controller.createRotationExclusion(memberId, areaId);
-            // Recargar la lista de usuarios excluidos
-            _loadExcludedUsers();
-            // Actualizar la UI
+            // Esperar un frame para asegurar que el controller haya actualizado _calendarData y notifyListeners() haya terminado
+            await Future.delayed(const Duration(milliseconds: 50));
+            // Recargar la lista de usuarios excluidos desde el calendario actualizado
             if (mounted) {
+              _loadExcludedUsers();
               setState(() {});
               SnackBarService().showSuccess(context, 'Usuario excluido correctamente');
             }
@@ -1070,7 +1032,7 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
     
     try {
       await widget.controller.removeRotationExclusion(user.exclusionId!);
-      // Recargar la lista de usuarios excluidos
+      // Recargar la lista de usuarios excluidos desde el calendario actualizado
       _loadExcludedUsers();
       // Actualizar la UI
       if (mounted) {
@@ -1242,29 +1204,29 @@ class _ZonasComunesEditScreenState extends State<ZonasComunesEditScreen> {
               hintText: hintText,
               prefixIcon: Icon(
                 icon,
-                color: UIConstants.primaryColor.withOpacity(0.7),
+                color: Colors.grey[700],
                 size: 20,
               ),
               filled: true,
-              fillColor: Colors.grey[50],
+              fillColor: Colors.grey.withOpacity(0.15),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
                 borderSide: BorderSide(
-                  color: Colors.grey[300]!,
-                  width: 1,
+                  color: Colors.grey.withOpacity(0.5),
+                  width: 2,
                 ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
                 borderSide: BorderSide(
-                  color: Colors.grey[300]!,
-                  width: 1,
+                  color: Colors.grey.withOpacity(0.5),
+                  width: 2,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
                 borderSide: BorderSide(
-                  color: UIConstants.primaryColor,
+                  color: Colors.grey.withOpacity(0.7),
                   width: 2,
                 ),
               ),
